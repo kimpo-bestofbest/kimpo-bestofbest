@@ -21,6 +21,14 @@ button{border:0;border-radius:11px;padding:11px 14px;background:var(--accent2);c
 .two{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}.rankrow{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line)}.rankrow:last-child{border:0}.rankleft{display:flex;align-items:center;gap:10px}.ranknum{width:25px;height:25px;display:grid;place-items:center;background:#30394b;border-radius:8px;font-size:12px;font-weight:800}.rankpoints{font-weight:800;color:#d7caff}
 .notice{background:#282338;border:1px solid #51416f;border-radius:12px;padding:12px;color:#d7caff;font-size:12px;line-height:1.5;margin-top:16px}
 .admin{display:none}.admin.open{display:block}.pill{font-size:11px;background:#30394b;color:#cbd3e1;padding:5px 8px;border-radius:20px;white-space:nowrap}
+.att-bar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;background:#231d38;border:1px solid #55447a;border-radius:16px;padding:14px 18px;margin-bottom:18px}
+.modal-bg{position:fixed;inset:0;background:rgba(8,10,16,.78);display:none;place-items:center;padding:18px;z-index:100}
+.modal-bg.open{display:grid}
+.modal{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:24px;width:100%;max-width:380px}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.tab{background:#101520;color:var(--muted);border:1px solid var(--line)}
+.tab.active{background:var(--accent2);color:white;border-color:var(--accent2)}
+.warn-text{color:var(--red);font-size:11px;margin-top:10px;line-height:1.4}
 footer{text-align:center;color:#6f7a8d;font-size:11px;margin-top:35px}
 @media(max-width:700px){.teams,.two{grid-template-columns:1fr}.stats{gap:8px}.stat{padding:12px}.stat strong{font-size:18px}.hero{padding:22px}}
 </style>
@@ -29,17 +37,30 @@ footer{text-align:center;color:#6f7a8d;font-size:11px;margin-top:35px}
 <div class="wrap">
   <header class="top">
     <div><div class="brand">무대<span>픽</span> ✦</div><div class="tag">오늘의 무대, 우승팀을 예측해 보세요.</div></div>
-    <div class="profile"><span id="userLabel">게스트</span><span class="points" id="profilePoints">1,000 P</span><button class="secondary small" onclick="changeName()">닉네임 설정</button></div>
+    <div class="profile" id="profileBox">
+      <span id="userLabel">로그인이 필요합니다</span>
+      <span class="points" id="profilePoints" style="display:none">1,000 P</span>
+      <button class="small" id="authBtn" onclick="openAuthModal('login')">로그인 / 회원가입</button>
+      <button class="secondary small" id="logoutBtn" style="display:none" onclick="logout()">로그아웃</button>
+    </div>
   </header>
+
+  <div class="att-bar" id="attendanceBar" style="display:none">
+    <div>
+      <b style="color:#dfd4ff">✦ 출석체크 진행 중!</b>
+      <div class="hint" id="attendanceInfo" style="margin-top:3px">지금 출석하면 1,000 P를 받습니다. (1회 한정)</div>
+    </div>
+    <button id="attendanceBtn" onclick="claimAttendance()">출석체크 (+1,000 P)</button>
+  </div>
 
   <section class="hero">
     <div class="eyebrow">CAMPUS STAGE PREDICTION</div>
     <h1>이번 무대의 주인공은<br>누가 될까?</h1>
-    <p>마음에 드는 팀에 투표하고 포인트를 걸어보세요.<br>실제 우승팀을 맞히면 전체 배팅 포인트를 정답자끼리 똑같이 나눕니다.</p>
+    <p>로그인 후 마음에 드는 팀에 투표하고 포인트를 걸어보세요.<br>실제 우승팀을 맞히면 전체 배팅 포인트를 정답자끼리 똑같이 나눕니다.</p>
   </section>
 
   <section class="stats">
-    <div class="stat"><small>내 누적 포인트</small><strong id="myPoints">1,000 P</strong></div>
+    <div class="stat"><small>내 누적 포인트</small><strong id="myPoints">-</strong></div>
     <div class="stat"><small>이번 라운드 투표</small><strong id="myVote">0회</strong></div>
     <div class="stat"><small>참여 팀 수</small><strong id="teamCount">4팀</strong></div>
   </section>
@@ -72,7 +93,11 @@ footer{text-align:center;color:#6f7a8d;font-size:11px;margin-top:35px}
   <section class="box">
     <div class="section-head" style="margin:0"><h2>운영자 메뉴</h2><button class="secondary small" onclick="toggleAdmin()">열기 / 닫기</button></div>
     <div class="admin" id="admin">
-      <p class="hint">실시간 DB 연결 버전입니다. 라운드 초기화 시 투표만 비워지며 누적 포인트는 유지됩니다.</p>
+      <p class="hint">실시간 DB 연결 버전입니다. 출석체크를 열면 학생들이 1회씩 1,000 P를 받을 수 있습니다.</p>
+      <div class="formrow">
+        <button id="toggleAttendanceBtn" onclick="toggleAttendance()">출석체크 열기 (+1,000 P)</button>
+        <span class="hint" id="attendanceCountLabel" style="align-self:center;margin:0">현재 출석 상태: 닫힘 (0명 출석)</span>
+      </div>
       <div class="formrow"><input class="field" id="adminTeamName" placeholder="팀 이름"><input class="field" id="adminGenre" placeholder="장르 / 설명"><button onclick="addTeam()">팀 추가</button></div>
       <div class="formrow">
         <select class="field" id="winnerSelect"></select>
@@ -83,8 +108,28 @@ footer{text-align:center;color:#6f7a8d;font-size:11px;margin-top:35px}
       <div id="adminMessage" class="hint"></div>
     </div>
   </section>
-  <div class="notice">Firebase Firestore 실시간 데이터베이스와 연결되어 있습니다. 정산된 포인트는 다음 라운드에도 계속 누적됩니다.</div>
+  <div class="notice">Firebase Firestore 실시간 데이터베이스와 연결되어 있습니다. 정산 및 출석으로 받은 포인트는 계정에 계속 누적됩니다.</div>
   <footer>무대픽 · Campus Stage Prediction · 가상 포인트 전용</footer>
+</div>
+
+<!-- 로그인 / 회원가입 모달 -->
+<div class="modal-bg" id="authModal" onclick="if(event.target===this)closeAuthModal()">
+  <div class="modal">
+    <div class="tabs">
+      <button class="tab active" id="tabLogin" onclick="switchAuthTab('login')">로그인</button>
+      <button class="tab" id="tabSignup" onclick="switchAuthTab('signup')">회원가입</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <input class="field" id="authName" placeholder="이름 (아이디)" maxlength="16" autocomplete="username">
+      <input class="field" id="authPass" type="password" placeholder="비밀번호" maxlength="32" autocomplete="current-password">
+      <button id="authSubmitBtn" onclick="submitAuth()">로그인</button>
+    </div>
+    <div id="authNotice" class="warn-text" style="display:none">※ 아이디 분실시 도와드릴 수 없습니다.</div>
+    <div id="authError" class="hint" style="color:var(--red)"></div>
+    <div style="text-align:right;margin-top:12px">
+      <button class="secondary small" onclick="closeAuthModal()">닫기</button>
+    </div>
+  </div>
 </div>
 
 <script type="module">
@@ -102,6 +147,7 @@ const firebaseConfig = {
 };
 
 const ADMIN_PASS = "1234"; // 원하는 운영자 비밀번호로 변경하세요
+const ATTENDANCE_REWARD = 1000;
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
@@ -114,13 +160,9 @@ const initialTeams = [
   {id:4,name:"팀 D",genre:"댄스 · 퍼포먼스",desc:"강렬한 퍼포먼스와 무대 연출"}
 ];
 
-const USER_KEY = "stagepick_user_id_v1";
-let myUserId = localStorage.getItem(USER_KEY);
-if (!myUserId) {
-  myUserId = "u_" + Math.random().toString(36).slice(2, 10);
-  localStorage.setItem(USER_KEY, myUserId);
-}
-
+const SESSION_KEY = "stagepick_logged_user_v1";
+let currentUser = localStorage.getItem(SESSION_KEY) || null;
+let authMode = "login";
 let adminAuthed = false;
 
 let state = {
@@ -128,19 +170,14 @@ let state = {
   bets: [],
   settled: false,
   winner: null,
-  users: {}
+  users: {},
+  attendanceOpen: false,
+  attendanceUsers: []
 };
 
-function ensureMyUser() {
-  if (!state.users[myUserId]) {
-    const num = Object.keys(state.users).length + 1;
-    state.users[myUserId] = { name: `게스트${num}`, points: 1000 };
-  }
-}
-
 function getMe() {
-  ensureMyUser();
-  return state.users[myUserId];
+  if (!currentUser || !state.users[currentUser]) return null;
+  return state.users[currentUser];
 }
 
 function esc(s) {
@@ -161,23 +198,65 @@ async function saveState() {
     bets: state.bets,
     settled: state.settled,
     winner: state.winner,
-    users: state.users
+    users: state.users,
+    attendanceOpen: state.attendanceOpen,
+    attendanceUsers: state.attendanceUsers
   });
 }
 
 function render() {
   const me = getMe();
-  document.getElementById("userLabel").textContent = me.name;
-  document.getElementById("profilePoints").textContent = me.points.toLocaleString() + " P";
-  document.getElementById("myPoints").textContent = me.points.toLocaleString() + " P";
-  document.getElementById("myVote").textContent = state.bets.filter(b => b.userId === myUserId).length + "회";
+
+  if (me) {
+    document.getElementById("userLabel").textContent = me.name;
+    document.getElementById("profilePoints").style.display = "inline";
+    document.getElementById("profilePoints").textContent = me.points.toLocaleString() + " P";
+    document.getElementById("authBtn").style.display = "none";
+    document.getElementById("logoutBtn").style.display = "inline-block";
+    document.getElementById("myPoints").textContent = me.points.toLocaleString() + " P";
+    document.getElementById("myVote").textContent = state.bets.filter(b => b.userId === currentUser).length + "회";
+  } else {
+    document.getElementById("userLabel").textContent = "로그인이 필요합니다";
+    document.getElementById("profilePoints").style.display = "none";
+    document.getElementById("authBtn").style.display = "inline-block";
+    document.getElementById("logoutBtn").style.display = "none";
+    document.getElementById("myPoints").textContent = "로그인 필요";
+    document.getElementById("myVote").textContent = "0회";
+  }
+
   document.getElementById("teamCount").textContent = state.teams.length + "팀";
+
+  const attBar = document.getElementById("attendanceBar");
+  const attBtn = document.getElementById("attendanceBtn");
+  const attInfo = document.getElementById("attendanceInfo");
+  const checked = currentUser && state.attendanceUsers.includes(currentUser);
+
+  if (state.attendanceOpen) {
+    attBar.style.display = "flex";
+    attBtn.disabled = Boolean(checked);
+    attBtn.textContent = checked ? "출석 완료" : "출석체크 (+1,000 P)";
+    attInfo.textContent = checked
+      ? `출석 완료! ${ATTENDANCE_REWARD.toLocaleString()} P가 지급되었습니다. (현재 ${state.attendanceUsers.length}명 출석)`
+      : `운영자가 출석체크를 열었습니다. 로그인 후 눌러 1,000 P를 받으세요! (현재 ${state.attendanceUsers.length}명 출석)`;
+  } else {
+    attBar.style.display = "none";
+  }
+
+  const toggleAttBtn = document.getElementById("toggleAttendanceBtn");
+  const attCountLabel = document.getElementById("attendanceCountLabel");
+  if (toggleAttBtn) {
+    toggleAttBtn.textContent = state.attendanceOpen ? "출석체크 마감" : "출석체크 열기 (+1,000 P)";
+    toggleAttBtn.className = state.attendanceOpen ? "secondary" : "";
+  }
+  if (attCountLabel) {
+    attCountLabel.textContent = `현재 출석 상태: ${state.attendanceOpen ? "열림" : "닫힘"} (${state.attendanceUsers.length}명 출석)`;
+  }
 
   const all = state.bets.length;
   document.getElementById("teams").innerHTML = state.teams.map(t => {
     const count = totalVotes(t.id);
     const pct = all ? Math.round(count / all * 100) : 0;
-    const own = state.bets.some(b => b.userId === myUserId && b.team === t.id);
+    const own = currentUser && state.bets.some(b => b.userId === currentUser && b.team === t.id);
     return `<article class="team ${own ? 'selected' : ''}"><div class="team-top"><div><h3>${esc(t.name)}</h3><div class="genre">${esc(t.genre || "")}</div></div><span class="pill">${own ? "참여 완료" : state.settled ? (state.winner === t.id ? "우승" : "종료") : "참여 가능"}</span></div><div class="team-desc">${esc(t.desc || "")}</div><div class="bar"><i style="width:${pct}%"></i></div><div class="percent"><span>${count}표 · ${totalStake(t.id).toLocaleString()} P</span><b>${pct}%</b></div><button class="secondary small" ${own || state.settled ? "disabled" : ""} onclick="selectTeam(${t.id})">${own ? "이미 참여함" : "이 팀 선택"}</button></article>`;
   }).join("");
 
@@ -191,9 +270,9 @@ function render() {
   }).join("") + (state.settled ? `<p class="hint">최종 우승: <b>${esc(state.teams.find(t => t.id === state.winner)?.name || "")}</b></p>` : "");
 
   const ranked = Object.values(state.users).sort((a, b) => b.points - a.points);
-  document.getElementById("ranking").innerHTML = ranked.slice(0, 10).map((u, i) =>
-    `<div class="rankrow"><div class="rankleft"><span class="ranknum">${i + 1}</span><b>${esc(u.name)}</b></div><span class="rankpoints">${u.points.toLocaleString()} P</span></div>`
-  ).join("");
+  document.getElementById("ranking").innerHTML = ranked.length
+    ? ranked.slice(0, 10).map((u, i) => `<div class="rankrow"><div class="rankleft"><span class="ranknum">${i + 1}</span><b>${esc(u.name)}</b></div><span class="rankpoints">${u.points.toLocaleString()} P</span></div>`).join("")
+    : `<div class="hint">아직 가입한 회원이 없습니다.</div>`;
 
   document.getElementById("betBox").style.opacity = state.settled ? ".55" : "1";
 }
@@ -202,32 +281,118 @@ function msg(id, s) {
   document.getElementById(id).textContent = s;
 }
 
-window.changeName = async function() {
-  const me = getMe();
-  const n = prompt("사용할 닉네임을 입력하세요.", me.name);
-  if (n && n.trim()) {
-    me.name = n.trim().slice(0, 16);
+window.openAuthModal = function(mode = "login") {
+  document.getElementById("authModal").classList.add("open");
+  document.getElementById("authName").value = "";
+  document.getElementById("authPass").value = "";
+  document.getElementById("authError").textContent = "";
+  switchAuthTab(mode);
+};
+
+window.closeAuthModal = function() {
+  document.getElementById("authModal").classList.remove("open");
+};
+
+window.switchAuthTab = function(mode) {
+  authMode = mode;
+  document.getElementById("tabLogin").classList.toggle("active", mode === "login");
+  document.getElementById("tabSignup").classList.toggle("active", mode === "signup");
+  document.getElementById("authSubmitBtn").textContent = mode === "login" ? "로그인" : "회원가입";
+  document.getElementById("authNotice").style.display = mode === "signup" ? "block" : "none";
+  document.getElementById("authError").textContent = "";
+};
+
+window.submitAuth = async function() {
+  const name = document.getElementById("authName").value.trim();
+  const pass = document.getElementById("authPass").value.trim();
+  const errEl = document.getElementById("authError");
+
+  if (!name || !pass) {
+    errEl.textContent = "이름과 비밀번호를 모두 입력하세요.";
+    return;
+  }
+
+  if (authMode === "signup") {
+    if (state.users[name]) {
+      errEl.textContent = "이미 사용 중인 이름입니다. 다른 이름을 입력하세요.";
+      return;
+    }
+    state.users[name] = { name, password: pass, points: 1000 };
+    currentUser = name;
+    localStorage.setItem(SESSION_KEY, currentUser);
+    closeAuthModal();
     render();
     await saveState();
+  } else {
+    const user = state.users[name];
+    if (!user) {
+      errEl.textContent = "존재하지 않는 이름입니다. 회원가입을 먼저 진행하세요.";
+      return;
+    }
+    if (user.password !== pass) {
+      errEl.textContent = "비밀번호가 일치하지 않습니다.";
+      return;
+    }
+    currentUser = name;
+    localStorage.setItem(SESSION_KEY, currentUser);
+    closeAuthModal();
+    render();
   }
 };
 
+window.logout = function() {
+  currentUser = null;
+  localStorage.removeItem(SESSION_KEY);
+  render();
+};
+
+window.toggleAttendance = async function() {
+  state.attendanceOpen = !state.attendanceOpen;
+  render();
+  await saveState();
+  msg("adminMessage", state.attendanceOpen ? "출석체크를 열었습니다. 학생들이 1회씩 1,000 P를 받을 수 있습니다." : "출석체크를 마감했습니다.");
+};
+
+window.claimAttendance = async function() {
+  const me = getMe();
+  if (!me) {
+    openAuthModal("login");
+    return;
+  }
+  if (!state.attendanceOpen) return alert("현재 출석체크가 열려 있지 않습니다.");
+  if (state.attendanceUsers.includes(currentUser)) return alert("이미 이번 출석체크에 참여했습니다.");
+
+  me.points += ATTENDANCE_REWARD;
+  state.attendanceUsers.push(currentUser);
+  render();
+  await saveState();
+  alert(`출석체크 완료! ${ATTENDANCE_REWARD.toLocaleString()} P가 지급되었습니다.`);
+};
+
 window.selectTeam = function(id) {
+  if (!getMe()) {
+    openAuthModal("login");
+    return;
+  }
   document.getElementById("teamSelect").value = id;
   document.getElementById("stake").focus();
 };
 
 window.placeBet = async function() {
   const me = getMe();
+  if (!me) {
+    openAuthModal("login");
+    return;
+  }
   if (state.settled) return msg("betMessage", "이미 결과가 발표됐습니다.");
   const id = Number(document.getElementById("teamSelect").value);
   const amount = Math.floor(Number(document.getElementById("stake").value));
-  if (state.bets.some(b => b.userId === myUserId && b.team === id)) return msg("betMessage", "이 팀에는 이미 참여했습니다.");
+  if (state.bets.some(b => b.userId === currentUser && b.team === id)) return msg("betMessage", "이 팀에는 이미 참여했습니다.");
   if (!Number.isFinite(amount) || amount < 1) return msg("betMessage", "1P 이상 입력하세요.");
   if (amount > me.points) return msg("betMessage", "보유 포인트보다 많이 걸 수 없습니다.");
 
   me.points -= amount;
-  state.bets.push({ userId: myUserId, userName: me.name, team: id, amount });
+  state.bets.push({ userId: currentUser, userName: me.name, team: id, amount });
   render();
   await saveState();
   msg("betMessage", "참여가 완료됐고 실시간으로 반영됐습니다.");
@@ -290,29 +455,32 @@ window.settle = async function() {
 };
 
 window.resetRound = async function() {
-  if (!confirm("현재 누적 포인트는 유지하고, 이번 라운드 투표 기록만 초기화할까요?")) return;
+  if (!confirm("현재 누적 포인트는 유지하고, 이번 라운드 투표 및 출석 기록만 초기화할까요?")) return;
   state.bets = [];
   state.settled = false;
   state.winner = null;
+  state.attendanceOpen = false;
+  state.attendanceUsers = [];
   render();
   await saveState();
-  msg("adminMessage", "투표 기록을 초기화했습니다. (누적 포인트는 유지됩니다)");
+  msg("adminMessage", "투표 및 출석 기록을 초기화했습니다. (누적 포인트는 유지됩니다)");
 };
 
 window.resetAll = async function() {
   if (!confirm("주의: 모든 사용자의 누적 포인트까지 1,000 P로 초기화할까요?")) return;
   const resetUsers = {};
   Object.keys(state.users).forEach(uid => {
-    resetUsers[uid] = { name: state.users[uid].name, points: 1000 };
+    resetUsers[uid] = { ...state.users[uid], points: 1000 };
   });
   state = {
     teams: initialTeams,
     bets: [],
     settled: false,
     winner: null,
-    users: resetUsers
+    users: resetUsers,
+    attendanceOpen: false,
+    attendanceUsers: []
   };
-  ensureMyUser();
   render();
   await saveState();
   msg("adminMessage", "모든 데이터와 포인트를 초기 상태로 리셋했습니다.");
@@ -321,7 +489,6 @@ window.resetAll = async function() {
 async function init() {
   const snap = await getDoc(roomRef);
   if (!snap.exists()) {
-    ensureMyUser();
     await saveState();
   }
   onSnapshot(roomRef, (docSnap) => {
@@ -332,8 +499,13 @@ async function init() {
       state.settled = Boolean(d.settled);
       state.winner = d.winner ?? null;
       state.users = d.users || {};
+      state.attendanceOpen = Boolean(d.attendanceOpen);
+      state.attendanceUsers = Array.isArray(d.attendanceUsers) ? d.attendanceUsers : [];
     }
-    ensureMyUser();
+    if (currentUser && !state.users[currentUser]) {
+      currentUser = null;
+      localStorage.removeItem(SESSION_KEY);
+    }
     render();
   });
 }
