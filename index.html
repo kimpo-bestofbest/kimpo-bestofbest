@@ -47,7 +47,7 @@ footer{text-align:center;color:#6f7a8d;font-size:11px;margin-top:35px}
   </div>
 
   <header class="top">
-    <div><div class="brand">김포대 <span>퍼포먼스 수업</span> ✦</div><div class="tag">오늘의 무대, 우승팀을 예측해 보세요.</div></div>
+    <div><div class="brand">김포대 <span>퍼포먼스 수업</span> ✦</div><div class="tag">오늘의 무대, 베오베를 예측해 보세요.</div></div>
     <div class="profile" id="profileBox">
       <span id="userLabel">로그인이 필요합니다</span>
       <span class="points" id="profilePoints" style="display:none">1,000 P</span>
@@ -67,7 +67,7 @@ footer{text-align:center;color:#6f7a8d;font-size:11px;margin-top:35px}
   <section class="hero">
     <div class="eyebrow">CAMPUS STAGE PREDICTION</div>
     <h1>오늘의 Best Of Best는??</h1>
-    <p>로그인 후 마음에 드는 팀에 투표하고 포인트를 걸어보세요.<br>실제 우승팀을 맞히면 전체 배팅 포인트를 정답자끼리 똑같이 나눕니다.</p>
+    <p>로그인 후 마음에 드는 팀에 투표하고 포인트를 걸어보세요.<br>실제 베오베를 맞히면 전체 배팅 포인트를 정답자끼리 똑같이 나눕니다.</p>
   </section>
 
   <section class="stats">
@@ -86,7 +86,7 @@ footer{text-align:center;color:#6f7a8d;font-size:11px;margin-top:35px}
       <input class="field" id="stake" type="number" min="1" step="50" value="100" placeholder="걸 포인트">
       <button onclick="placeBet()">투표하고 포인트 걸기</button>
     </div>
-    <div class="hint">팀당 한 번 참여할 수 있습니다. 우승팀을 맞힌 사람들끼리 전체 배팅 포인트를 동일하게 분배(1/N)받습니다.</div>
+    <div class="hint">팀당 한 번 참여할 수 있습니다. 베오베를 맞힌 사람들끼리 전체 배팅 포인트를 동일하게 분배(1/N)받습니다.</div>
     <div id="betMessage" class="hint"></div>
   </section>
 
@@ -104,7 +104,7 @@ footer{text-align:center;color:#6f7a8d;font-size:11px;margin-top:35px}
   <section class="box">
     <div class="section-head" style="margin:0"><h2>운영자 메뉴</h2><button class="secondary small" onclick="toggleAdmin()">열기 / 닫기</button></div>
     <div class="admin" id="admin">
-      <p class="hint">실시간 DB 연결 버전입니다. 공지 등록, 출석체크, 우승 정산이 모든 사용자에게 즉시 반영됩니다.</p>
+      <p class="hint">실시간 DB 연결 버전입니다. 공지 등록, 출석체크, 베오베 정산이 모든 사용자에게 즉시 반영됩니다.</p>
       <div class="formrow">
         <input class="field" id="adminNoticeInput" placeholder="맨 위에 띄울 공지사항 내용을 입력하세요">
         <button onclick="updateNotice()">공지 띄우기</button>
@@ -117,7 +117,7 @@ footer{text-align:center;color:#6f7a8d;font-size:11px;margin-top:35px}
       <div class="formrow"><input class="field" id="adminTeamName" placeholder="팀 이름"><input class="field" id="adminGenre" placeholder="장르 / 설명"><button onclick="addTeam()">팀 추가</button></div>
       <div class="formrow">
         <select class="field" id="winnerSelect"></select>
-        <button onclick="settle()">우승팀 발표 및 포인트 정산</button>
+        <button onclick="settle()">베오베 발표 및 포인트 정산</button>
         <button class="secondary" onclick="resetRound()">라운드 초기화 (포인트 유지)</button>
         <button class="secondary" onclick="resetAll()">전체 리셋 (포인트 포함)</button>
       </div>
@@ -289,7 +289,7 @@ function render() {
     const count = totalVotes(t.id);
     const pct = all ? Math.round(count / all * 100) : 0;
     const own = currentUser && state.bets.some(b => b.userId === currentUser && b.team === t.id);
-    return `<article class="team ${own ? 'selected' : ''}"><div class="team-top"><div><h3>${esc(t.name)}</h3><div class="genre">${esc(t.genre || "")}</div></div><span class="pill">${own ? "참여 완료" : state.settled ? (state.winner === t.id ? "우승" : "종료") : "참여 가능"}</span></div><div class="team-desc">${esc(t.desc || "")}</div><div class="bar"><i style="width:${pct}%"></i></div><div class="percent"><span>${count}표 · ${totalStake(t.id).toLocaleString()} P</span><b>${pct}%</b></div><button class="secondary small" ${own || state.settled ? "disabled" : ""} onclick="selectTeam(${t.id})">${own ? "이미 참여함" : "이 팀 선택"}</button></article>`;
+    return `<article class="team ${own ? 'selected' : ''}"><div class="team-top"><div><h3>${esc(t.name)}</h3><div class="genre">${esc(t.genre || "")}</div></div><span class="pill">${own ? "참여 완료" : state.settled ? (state.winner === t.id ? "베오베" : "종료") : "참여 가능"}</span></div><div class="team-desc">${esc(t.desc || "")}</div><div class="bar"><i style="width:${pct}%"></i></div><div class="percent"><span>${count}표 · ${totalStake(t.id).toLocaleString()} P</span><b>${pct}%</b></div><button class="secondary small" ${own || state.settled ? "disabled" : ""} onclick="selectTeam(${t.id})">${own ? "이미 참여함" : "이 팀 선택"}</button></article>`;
   }).join("");
 
   const opts = state.teams.map(t => `<option value="${t.id}">${esc(t.name)}</option>`).join("");
@@ -310,7 +310,7 @@ function render() {
         <div class="res-sub"><span>포인트 비율 · ${stake.toLocaleString()} P</span><b style="color:var(--green)">${pointPct}%</b></div>
         <div class="bar pt"><i style="width:${pointPct}%"></i></div>
       </div>`;
-  }).join("") + (state.settled ? `<p class="hint">최종 우승: <b>${esc(state.teams.find(t => t.id === state.winner)?.name || "")}</b></p>` : "");
+  }).join("") + (state.settled ? `<p class="hint">최종 베오베: <b>${esc(state.teams.find(t => t.id === state.winner)?.name || "")}</b></p>` : "");
 
   const ranked = Object.values(state.users).sort((a, b) => b.points - a.points);
   document.getElementById("ranking").innerHTML = ranked.length
@@ -513,7 +513,7 @@ window.settle = async function() {
   state.winner = winner;
   render();
   await saveState();
-  msg("adminMessage", `우승팀 발표 완료! 총 ${totalPool.toLocaleString()} P를 정답자 ${winningBets.length}명에게 1인당 ${share.toLocaleString()} P씩 균등 분배했습니다.`);
+  msg("adminMessage", `베오베 발표 완료! 총 ${totalPool.toLocaleString()} P를 정답자 ${winningBets.length}명에게 1인당 ${share.toLocaleString()} P씩 균등 분배했습니다.`);
 };
 
 window.resetRound = async function() {
