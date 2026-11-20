@@ -35,12 +35,12 @@ footer{text-align:center;color:#6f7a8d;font-size:11px;margin-top:35px}
   <section class="hero">
     <div class="eyebrow">CAMPUS STAGE PREDICTION</div>
     <h1>이번 무대의 주인공은<br>누가 될까?</h1>
-    <p>마음에 드는 팀에 투표하고 포인트를 걸어보세요.<br>실제 우승팀을 맞히면 포인트를 정산합니다.</p>
+    <p>마음에 드는 팀에 투표하고 포인트를 걸어보세요.<br>실제 우승팀을 맞히면 전체 배팅 포인트를 정답자끼리 똑같이 나눕니다.</p>
   </section>
 
   <section class="stats">
-    <div class="stat"><small>내 보유 포인트</small><strong id="myPoints">1,000 P</strong></div>
-    <div class="stat"><small>참여한 투표</small><strong id="myVote">0회</strong></div>
+    <div class="stat"><small>내 누적 포인트</small><strong id="myPoints">1,000 P</strong></div>
+    <div class="stat"><small>이번 라운드 투표</small><strong id="myVote">0회</strong></div>
     <div class="stat"><small>참여 팀 수</small><strong id="teamCount">4팀</strong></div>
   </section>
 
@@ -54,7 +54,7 @@ footer{text-align:center;color:#6f7a8d;font-size:11px;margin-top:35px}
       <input class="field" id="stake" type="number" min="1" step="50" value="100" placeholder="걸 포인트">
       <button onclick="placeBet()">투표하고 포인트 걸기</button>
     </div>
-    <div class="hint">팀당 한 번 참여할 수 있습니다. 포인트는 실제 현금이나 상품이 아닌 사이트 내 가상 점수입니다.</div>
+    <div class="hint">팀당 한 번 참여할 수 있습니다. 우승팀을 맞힌 사람들끼리 전체 배팅 포인트를 동일하게 분배(1/N)받습니다.</div>
     <div id="betMessage" class="hint"></div>
   </section>
 
@@ -64,7 +64,7 @@ footer{text-align:center;color:#6f7a8d;font-size:11px;margin-top:35px}
       <div id="results"></div>
     </section>
     <section class="box">
-      <div class="section-head" style="margin:0 0 8px"><h2>포인트 랭킹</h2><span>전체 실시간 순위</span></div>
+      <div class="section-head" style="margin:0 0 8px"><h2>누적 포인트 랭킹</h2><span>전체 실시간 순위</span></div>
       <div id="ranking"></div>
     </section>
   </div>
@@ -72,13 +72,18 @@ footer{text-align:center;color:#6f7a8d;font-size:11px;margin-top:35px}
   <section class="box">
     <div class="section-head" style="margin:0"><h2>운영자 메뉴</h2><button class="secondary small" onclick="toggleAdmin()">열기 / 닫기</button></div>
     <div class="admin" id="admin">
-      <p class="hint">실시간 DB 연결 버전입니다. 팀 추가, 우승 정산, 초기화가 모든 사용자에게 반영됩니다.</p>
+      <p class="hint">실시간 DB 연결 버전입니다. 라운드 초기화 시 투표만 비워지며 누적 포인트는 유지됩니다.</p>
       <div class="formrow"><input class="field" id="adminTeamName" placeholder="팀 이름"><input class="field" id="adminGenre" placeholder="장르 / 설명"><button onclick="addTeam()">팀 추가</button></div>
-      <div class="formrow"><select class="field" id="winnerSelect"></select><button onclick="settle()">우승팀 발표 및 포인트 정산</button><button class="secondary" onclick="resetDemo()">초기화</button></div>
+      <div class="formrow">
+        <select class="field" id="winnerSelect"></select>
+        <button onclick="settle()">우승팀 발표 및 포인트 정산</button>
+        <button class="secondary" onclick="resetRound()">라운드 초기화 (포인트 유지)</button>
+        <button class="secondary" onclick="resetAll()">전체 리셋 (포인트 포함)</button>
+      </div>
       <div id="adminMessage" class="hint"></div>
     </div>
   </section>
-  <div class="notice">Firebase Firestore 실시간 데이터베이스와 연결되어 있습니다. 투표, 배팅, 랭킹, 우승 정산 결과가 실시간으로 공유됩니다.</div>
+  <div class="notice">Firebase Firestore 실시간 데이터베이스와 연결되어 있습니다. 정산된 포인트는 다음 라운드에도 계속 누적됩니다.</div>
   <footer>무대픽 · Campus Stage Prediction · 가상 포인트 전용</footer>
 </div>
 
@@ -96,7 +101,7 @@ const firebaseConfig = {
   measurementId: "G-0L8Z3CB7Z2"
 };
 
-const ADMIN_PASS = "6230"; // 원하는 운영자 비밀번호로 변경하세요
+const ADMIN_PASS = "1234"; // 원하는 운영자 비밀번호로 변경하세요
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
@@ -266,24 +271,36 @@ window.settle = async function() {
   if (!state.bets.length) return msg("adminMessage", "참여 기록이 없습니다.");
   const winner = Number(document.getElementById("winnerSelect").value);
   const winningBets = state.bets.filter(b => b.team === winner);
-  const losingPool = state.bets.filter(b => b.team !== winner).reduce((s, b) => s + b.amount, 0);
-  const winningPool = winningBets.reduce((s, b) => s + b.amount, 0);
-  if (!winningBets.length) return msg("adminMessage", "해당 팀에 건 포인트가 없어 정산할 수 없습니다.");
+  if (!winningBets.length) return msg("adminMessage", "해당 팀에 투표한 사람이 없어 정산할 수 없습니다.");
+
+  const totalPool = state.bets.reduce((s, b) => s + b.amount, 0);
+  const share = Math.floor(totalPool / winningBets.length);
 
   winningBets.forEach(b => {
     if (state.users[b.userId]) {
-      state.users[b.userId].points += b.amount + Math.floor(losingPool * b.amount / winningPool);
+      state.users[b.userId].points += share;
     }
   });
+
   state.settled = true;
   state.winner = winner;
   render();
   await saveState();
-  msg("adminMessage", "우승팀 발표 및 전체 사용자 포인트 정산을 완료했습니다.");
+  msg("adminMessage", `우승팀 발표 완료! 총 ${totalPool.toLocaleString()} P를 정답자 ${winningBets.length}명에게 1인당 ${share.toLocaleString()} P씩 균등 분배했습니다.`);
 };
 
-window.resetDemo = async function() {
-  if (!confirm("모든 실시간 데이터를 초기화할까요?")) return;
+window.resetRound = async function() {
+  if (!confirm("현재 누적 포인트는 유지하고, 이번 라운드 투표 기록만 초기화할까요?")) return;
+  state.bets = [];
+  state.settled = false;
+  state.winner = null;
+  render();
+  await saveState();
+  msg("adminMessage", "투표 기록을 초기화했습니다. (누적 포인트는 유지됩니다)");
+};
+
+window.resetAll = async function() {
+  if (!confirm("주의: 모든 사용자의 누적 포인트까지 1,000 P로 초기화할까요?")) return;
   const resetUsers = {};
   Object.keys(state.users).forEach(uid => {
     resetUsers[uid] = { name: state.users[uid].name, points: 1000 };
@@ -298,7 +315,7 @@ window.resetDemo = async function() {
   ensureMyUser();
   render();
   await saveState();
-  msg("adminMessage", "초기화했습니다.");
+  msg("adminMessage", "모든 데이터와 포인트를 초기 상태로 리셋했습니다.");
 };
 
 async function init() {
