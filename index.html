@@ -8,6 +8,8 @@
 :root{--bg:#10131b;--panel:#191e2a;--panel2:#202737;--text:#f4f6fb;--muted:#9ba6b8;--accent:#a78bfa;--accent2:#7c5ce7;--line:#30394b;--green:#56d6a0;--red:#ff7b86}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#24203c 0,#10131b 48%);color:var(--text);font-family:system-ui,-apple-system,"Noto Sans KR",sans-serif}
 .wrap{max-width:1050px;margin:auto;padding:28px 18px 60px}.top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:28px}
+.top-notice{background:linear-gradient(90deg,#342659,#232942);border:1px solid #6b54a3;border-radius:14px;padding:13px 16px;margin-bottom:18px;display:none;align-items:center;gap:10px;line-height:1.5;font-size:13px;color:#efeaff;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+.top-notice-badge{background:var(--accent2);color:#fff;font-size:11px;font-weight:800;padding:3px 8px;border-radius:999px;white-space:nowrap}
 .brand{font-weight:900;font-size:22px;letter-spacing:-1px}.brand span{color:var(--accent)}.tag{color:var(--muted);font-size:13px;margin-top:4px}
 .profile{background:var(--panel);border:1px solid var(--line);padding:10px 14px;border-radius:14px;display:flex;align-items:center;gap:10px}
 .points{font-weight:800;color:#d7caff}.hero{padding:30px;border:1px solid #40365e;border-radius:24px;background:linear-gradient(120deg,#30264c,#1c2435 70%);margin-bottom:22px}
@@ -39,6 +41,11 @@ footer{text-align:center;color:#6f7a8d;font-size:11px;margin-top:35px}
 </head>
 <body>
 <div class="wrap">
+  <div class="top-notice" id="topNoticeBar">
+    <span class="top-notice-badge">공지</span>
+    <span id="topNoticeText"></span>
+  </div>
+
   <header class="top">
     <div><div class="brand">무대<span>픽</span> ✦</div><div class="tag">오늘의 무대, 우승팀을 예측해 보세요.</div></div>
     <div class="profile" id="profileBox">
@@ -97,7 +104,12 @@ footer{text-align:center;color:#6f7a8d;font-size:11px;margin-top:35px}
   <section class="box">
     <div class="section-head" style="margin:0"><h2>운영자 메뉴</h2><button class="secondary small" onclick="toggleAdmin()">열기 / 닫기</button></div>
     <div class="admin" id="admin">
-      <p class="hint">실시간 DB 연결 버전입니다. 출석체크를 열면 학생들이 1회씩 1,000 P를 받을 수 있습니다.</p>
+      <p class="hint">실시간 DB 연결 버전입니다. 공지 등록, 출석체크, 우승 정산이 모든 사용자에게 즉시 반영됩니다.</p>
+      <div class="formrow">
+        <input class="field" id="adminNoticeInput" placeholder="맨 위에 띄울 공지사항 내용을 입력하세요">
+        <button onclick="updateNotice()">공지 띄우기</button>
+        <button class="secondary" onclick="clearNotice()">공지 내리기</button>
+      </div>
       <div class="formrow">
         <button id="toggleAttendanceBtn" onclick="toggleAttendance()">출석체크 열기 (+1,000 P)</button>
         <span class="hint" id="attendanceCountLabel" style="align-self:center;margin:0">현재 출석 상태: 닫힘 (0명 출석)</span>
@@ -179,7 +191,8 @@ let state = {
   winner: null,
   users: {},
   attendanceOpen: false,
-  attendanceUsers: []
+  attendanceUsers: [],
+  notice: ""
 };
 
 function getMe() {
@@ -207,12 +220,22 @@ async function saveState() {
     winner: state.winner,
     users: state.users,
     attendanceOpen: state.attendanceOpen,
-    attendanceUsers: state.attendanceUsers
+    attendanceUsers: state.attendanceUsers,
+    notice: state.notice
   });
 }
 
 function render() {
   const me = getMe();
+
+  const noticeBar = document.getElementById("topNoticeBar");
+  const noticeText = document.getElementById("topNoticeText");
+  if (state.notice && state.notice.trim()) {
+    noticeBar.style.display = "flex";
+    noticeText.textContent = state.notice;
+  } else {
+    noticeBar.style.display = "none";
+  }
 
   if (me) {
     document.getElementById("userLabel").textContent = me.name;
@@ -300,6 +323,23 @@ function render() {
 function msg(id, s) {
   document.getElementById(id).textContent = s;
 }
+
+window.updateNotice = async function() {
+  const text = document.getElementById("adminNoticeInput").value.trim();
+  if (!text) return msg("adminMessage", "공지사항 내용을 입력하세요.");
+  state.notice = text;
+  render();
+  await saveState();
+  msg("adminMessage", "상단 공지사항을 등록했습니다.");
+};
+
+window.clearNotice = async function() {
+  state.notice = "";
+  document.getElementById("adminNoticeInput").value = "";
+  render();
+  await saveState();
+  msg("adminMessage", "상단 공지사항을 내렸습니다.");
+};
 
 window.openAuthModal = function(mode = "login") {
   document.getElementById("authModal").classList.add("open");
@@ -434,6 +474,7 @@ window.toggleAdmin = function() {
     }
     adminAuthed = true;
   }
+  document.getElementById("adminNoticeInput").value = state.notice || "";
   panel.classList.add("open");
 };
 
@@ -500,7 +541,8 @@ window.resetAll = async function() {
     winner: null,
     users: resetUsers,
     attendanceOpen: false,
-    attendanceUsers: []
+    attendanceUsers: [],
+    notice: ""
   };
   render();
   await saveState();
@@ -522,6 +564,7 @@ async function init() {
       state.users = d.users || {};
       state.attendanceOpen = Boolean(d.attendanceOpen);
       state.attendanceUsers = Array.isArray(d.attendanceUsers) ? d.attendanceUsers : [];
+      state.notice = d.notice || "";
     }
     if (currentUser && !state.users[currentUser]) {
       currentUser = null;
