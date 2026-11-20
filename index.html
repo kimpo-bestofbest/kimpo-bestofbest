@@ -206,6 +206,7 @@ footer{text-align:center;color:#6f7a8d;font-size:11px;margin-top:35px}
     <div id="authNotice" class="warn-text" style="display:none">
       ※ 아이디 분실시 도와드릴 수 없습니다.<br>
       ※ 아이디를 본인 이름으로 하지 않을 시 계정이 삭제될 수 있습니다.<br>
+      ※ 이름은 최대 3글자까지 설정할 수 있습니다.<br>
       ※ 비밀번호는 숫자 4자리로 설정해야 합니다.
     </div>
     <div id="authError" class="hint" style="color:var(--red)"></div>
@@ -229,7 +230,7 @@ const firebaseConfig = {
   measurementId: "G-0L8Z3CB7Z2"
 };
 
-const ADMIN_PASS = "6230";
+const ADMIN_PASS = "1234";
 const ATTENDANCE_REWARD = 1000;
 
 const app = initializeApp(firebaseConfig);
@@ -498,7 +499,10 @@ window.switchAuthTab = function(mode) {
   document.getElementById("tabSignup").classList.toggle("active",mode === "signup");
   document.getElementById("authSubmitBtn").textContent = mode === "login" ? "로그인" : "회원가입";
   document.getElementById("authNotice").style.display = mode === "signup" ? "block" : "none";
-  document.getElementById("authName").placeholder = mode === "signup" ? "본인 이름 (아이디로 사용됩니다)" : "본인 이름 (아이디)";
+  document.getElementById("authName").placeholder = mode === "signup"
+    ? "본인 이름 (최대 3글자)"
+    : "본인 이름 (아이디)";
+  document.getElementById("authName").setAttribute("maxlength",mode === "signup" ? "3" : "16");
   document.getElementById("authPass").placeholder = mode === "signup" ? "숫자 4자리 비밀번호 설정" : "숫자 4자리 비밀번호";
   document.getElementById("authPass").setAttribute("maxlength","4");
   document.getElementById("authPass").setAttribute("inputmode","numeric");
@@ -512,6 +516,11 @@ window.submitAuth = async function() {
 
   if (!name || !pass) {
     errEl.textContent = "본인 이름과 비밀번호를 모두 입력하세요.";
+    return;
+  }
+
+  if (authMode === "signup" && Array.from(name).length > 3) {
+    errEl.textContent = "이름은 최대 3글자까지만 설정할 수 있습니다.";
     return;
   }
 
@@ -717,7 +726,6 @@ window.deleteTeam = async function(id) {
   msg("adminMessage",`'${team.name}' 팀을 삭제했습니다. 삭제된 팀의 배팅 포인트는 반환했습니다.`);
 };
 
-/* 변경된 정산 함수 */
 window.settle = async function() {
   if (state.settled) {
     return msg("adminMessage","이미 정산이 끝났습니다.");
@@ -728,19 +736,16 @@ window.settle = async function() {
   }
 
   const winner = Number(document.getElementById("winnerSelect").value);
-
   const winningBets = state.bets.filter(b => b.team === winner);
 
   if (!winningBets.length) {
     return msg("adminMessage","해당 팀에 배팅한 사람이 없어 정산할 수 없습니다.");
   }
 
-  // 전체 배팅 포인트
   const totalPool = state.bets.reduce(
     (sum,b) => sum + Number(b.amount || 0),0
   );
 
-  // 우승팀에 배팅한 전체 포인트
   const winningPool = winningBets.reduce(
     (sum,b) => sum + Number(b.amount || 0),0
   );
@@ -749,7 +754,6 @@ window.settle = async function() {
     return msg("adminMessage","우승팀의 배팅 금액이 올바르지 않습니다.");
   }
 
-  // 각 배팅자의 배팅 비율에 따른 지급액 계산
   const shares = winningBets.map((b,index) => {
     const exact = totalPool * Number(b.amount || 0) / winningPool;
     const payout = Math.floor(exact);
@@ -762,7 +766,6 @@ window.settle = async function() {
     };
   });
 
-  // 소수점으로 남은 포인트를 잔여 비율이 큰 순서대로 배분
   let remainingPoints = totalPool - shares.reduce(
     (sum,s) => sum + s.payout,0
   );
@@ -775,7 +778,6 @@ window.settle = async function() {
     remainderOrder[i].payout += 1;
   }
 
-  // 정산 포인트 지급
   shares.forEach(s => {
     const user = state.users[s.bet.userId];
 
