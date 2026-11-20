@@ -15,7 +15,11 @@
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0 28px}.stat{background:var(--panel);border:1px solid var(--line);padding:16px;border-radius:16px}.stat small{color:var(--muted)}.stat strong{display:block;font-size:22px;margin-top:5px}
 .section-head{display:flex;justify-content:space-between;align-items:end;gap:10px;margin:28px 0 14px}.section-head h2{font-size:20px;margin:0}.section-head span{font-size:12px;color:var(--muted)}
 .teams{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.team{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;position:relative;overflow:hidden}.team.selected{border-color:var(--accent);box-shadow:0 0 0 1px #a78bfa44}.team-top{display:flex;justify-content:space-between;gap:10px}.team h3{margin:0;font-size:18px}.genre{font-size:12px;color:var(--muted);margin-top:5px}.team-desc{color:#c2c8d4;font-size:13px;line-height:1.5;margin:14px 0}
-.bar{height:7px;background:#30394b;border-radius:20px;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent2),#c4a9ff);border-radius:20px}.percent{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;margin:7px 0 14px}
+.bar{height:7px;background:#30394b;border-radius:20px;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent2),#c4a9ff);border-radius:20px}.bar.pt i{background:linear-gradient(90deg,#2fa877,var(--green))}
+.percent{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;margin:7px 0 14px}
+.res-item{padding:11px 0;border-bottom:1px solid var(--line)}.res-item:last-child{border:0}
+.res-title{display:flex;justify-content:space-between;align-items:center;font-size:14px;margin-bottom:6px}
+.res-sub{display:flex;justify-content:space-between;color:var(--muted);font-size:11px;margin:5px 0 4px}
 button{border:0;border-radius:11px;padding:11px 14px;background:var(--accent2);color:white;font-weight:800;cursor:pointer;font-size:14px}button:hover{filter:brightness(1.12)}button:disabled{opacity:.4;cursor:not-allowed}.secondary{background:#30394b;color:#e3e7ef}.small{padding:8px 11px;font-size:12px}
 .box{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;margin-top:16px}.formrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.field{background:#101520;border:1px solid var(--line);border-radius:10px;color:var(--text);padding:11px 12px;min-width:0;flex:1;font:inherit}.hint{color:var(--muted);font-size:12px;line-height:1.5;margin-top:9px}
 .two{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}.rankrow{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line)}.rankrow:last-child{border:0}.rankleft{display:flex;align-items:center;gap:10px}.ranknum{width:25px;height:25px;display:grid;place-items:center;background:#30394b;border-radius:8px;font-size:12px;font-weight:800}.rankpoints{font-weight:800;color:#d7caff}
@@ -81,7 +85,7 @@ footer{text-align:center;color:#6f7a8d;font-size:11px;margin-top:35px}
 
   <div class="two">
     <section class="box">
-      <div class="section-head" style="margin:0 0 8px"><h2>참여 현황</h2><span>실시간 투표 비율</span></div>
+      <div class="section-head" style="margin:0 0 8px"><h2>참여 현황</h2><span id="resultsSummary">투표 및 포인트 비율</span></div>
       <div id="results"></div>
     </section>
     <section class="box">
@@ -256,6 +260,8 @@ function render() {
   }
 
   const all = state.bets.length;
+  const allPoints = state.bets.reduce((sum, b) => sum + b.amount, 0);
+
   document.getElementById("teams").innerHTML = state.teams.map(t => {
     const count = totalVotes(t.id);
     const pct = all ? Math.round(count / all * 100) : 0;
@@ -267,9 +273,20 @@ function render() {
   document.getElementById("teamSelect").innerHTML = opts;
   document.getElementById("winnerSelect").innerHTML = opts;
 
+  document.getElementById("resultsSummary").textContent = `총 ${all}표 · ${allPoints.toLocaleString()} P`;
   document.getElementById("results").innerHTML = state.teams.map(t => {
-    const pct = all ? Math.round(totalVotes(t.id) / all * 100) : 0;
-    return `<div style="margin:13px 0"><div class="percent"><span>${esc(t.name)} · ${totalVotes(t.id)}표</span><b>${pct}%</b></div><div class="bar"><i style="width:${pct}%"></i></div></div>`;
+    const votes = totalVotes(t.id);
+    const stake = totalStake(t.id);
+    const votePct = all ? Math.round(votes / all * 100) : 0;
+    const pointPct = allPoints ? Math.round(stake / allPoints * 100) : 0;
+    return `
+      <div class="res-item">
+        <div class="res-title"><b>${esc(t.name)}</b></div>
+        <div class="res-sub"><span>투표 비율 · ${votes}표</span><b>${votePct}%</b></div>
+        <div class="bar"><i style="width:${votePct}%"></i></div>
+        <div class="res-sub"><span>포인트 비율 · ${stake.toLocaleString()} P</span><b style="color:var(--green)">${pointPct}%</b></div>
+        <div class="bar pt"><i style="width:${pointPct}%"></i></div>
+      </div>`;
   }).join("") + (state.settled ? `<p class="hint">최종 우승: <b>${esc(state.teams.find(t => t.id === state.winner)?.name || "")}</b></p>` : "");
 
   const ranked = Object.values(state.users).sort((a, b) => b.points - a.points);
