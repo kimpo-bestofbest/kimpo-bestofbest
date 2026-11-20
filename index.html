@@ -60,11 +60,11 @@ footer{text-align:center;color:#6f7a8d;font-size:11px;margin-top:35px}
 
   <div class="two">
     <section class="box">
-      <div class="section-head" style="margin:0 0 8px"><h2>참여 현황</h2><span>전체 투표 비율</span></div>
+      <div class="section-head" style="margin:0 0 8px"><h2>참여 현황</h2><span>실시간 투표 비율</span></div>
       <div id="results"></div>
     </section>
     <section class="box">
-      <div class="section-head" style="margin:0 0 8px"><h2>포인트 랭킹</h2><span>이 브라우저 기준</span></div>
+      <div class="section-head" style="margin:0 0 8px"><h2>포인트 랭킹</h2><span>전체 실시간 순위</span></div>
       <div id="ranking"></div>
     </section>
   </div>
@@ -72,72 +72,238 @@ footer{text-align:center;color:#6f7a8d;font-size:11px;margin-top:35px}
   <section class="box">
     <div class="section-head" style="margin:0"><h2>운영자 메뉴</h2><button class="secondary small" onclick="toggleAdmin()">열기 / 닫기</button></div>
     <div class="admin" id="admin">
-      <p class="hint">시연용 운영자 메뉴입니다. 실제 서비스에서는 운영자 로그인과 권한 확인이 필요합니다.</p>
+      <p class="hint">실시간 DB 연결 버전입니다. 팀 추가, 우승 정산, 초기화가 모든 사용자에게 반영됩니다.</p>
       <div class="formrow"><input class="field" id="adminTeamName" placeholder="팀 이름"><input class="field" id="adminGenre" placeholder="장르 / 설명"><button onclick="addTeam()">팀 추가</button></div>
       <div class="formrow"><select class="field" id="winnerSelect"></select><button onclick="settle()">우승팀 발표 및 포인트 정산</button><button class="secondary" onclick="resetDemo()">초기화</button></div>
       <div id="adminMessage" class="hint"></div>
     </div>
   </section>
-  <div class="notice">현재 버전은 기능 확인용 데모입니다. 데이터가 이 브라우저에만 저장되므로 다른 학생의 투표와 합쳐지지 않습니다. 실제 학생들이 함께 쓰려면 온라인 데이터베이스와 로그인 기능을 연결해야 합니다.</div>
+  <div class="notice">Firebase Firestore 실시간 데이터베이스와 연결되어 있습니다. 투표, 배팅, 랭킹, 우승 정산 결과가 실시간으로 공유됩니다.</div>
   <footer>무대픽 · Campus Stage Prediction · 가상 포인트 전용</footer>
 </div>
-<script>
-const initialTeams=[
- {id:1,name:"팀 A",genre:"밴드 · 록",desc:"에너지 넘치는 밴드 퍼포먼스"},
- {id:2,name:"팀 B",genre:"재즈 · 퓨전",desc:"탄탄한 합주와 즉흥 연주"},
- {id:3,name:"팀 C",genre:"어쿠스틱 · 팝",desc:"감성적인 보컬 중심 무대"},
- {id:4,name:"팀 D",genre:"댄스 · 퍼포먼스",desc:"강렬한 퍼포먼스와 무대 연출"}
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCErpBG2b3StHeKb94CpYdxIcnC4q9Y4tc",
+  authDomain: "bestofbest-109ac.firebaseapp.com",
+  projectId: "bestofbest-109ac",
+  storageBucket: "bestofbest-109ac.firebasestorage.app",
+  messagingSenderId: "650486715113",
+  appId: "1:650486715113:web:bf382af7b826cada01d678",
+  measurementId: "G-0L8Z3CB7Z2"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const roomRef = doc(db, "stages", "current_stage");
+
+const initialTeams = [
+  {id:1,name:"팀 A",genre:"밴드 · 록",desc:"에너지 넘치는 밴드 퍼포먼스"},
+  {id:2,name:"팀 B",genre:"재즈 · 퓨전",desc:"탄탄한 합주와 즉흥 연주"},
+  {id:3,name:"팀 C",genre:"어쿠스틱 · 팝",desc:"감성적인 보컬 중심 무대"},
+  {id:4,name:"팀 D",genre:"댄스 · 퍼포먼스",desc:"강렬한 퍼포먼스와 무대 연출"}
 ];
-const KEY="stagepick_demo_v1";
-let data=JSON.parse(localStorage.getItem(KEY)||"null")||{name:"게스트",points:1000,teams:initialTeams,bets:[],settled:false,winner:null,users:[]};
-function save(){localStorage.setItem(KEY,JSON.stringify(data));render()}
-function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-function totalVotes(id){return data.bets.filter(b=>b.team===id).length}
-function totalStake(id){return data.bets.filter(b=>b.team===id).reduce((a,b)=>a+b.amount,0)}
-function render(){
- document.getElementById("userLabel").textContent=data.name;
- document.getElementById("profilePoints").textContent=data.points.toLocaleString()+" P";
- document.getElementById("myPoints").textContent=data.points.toLocaleString()+" P";
- document.getElementById("myVote").textContent=data.bets.filter(b=>b.user===data.name).length+"회";
- document.getElementById("teamCount").textContent=data.teams.length+"팀";
- const all=data.bets.length;
- document.getElementById("teams").innerHTML=data.teams.map(t=>{
-  const count=totalVotes(t.id),pct=all?Math.round(count/all*100):0,own=data.bets.some(b=>b.user===data.name&&b.team===t.id);
-  return `<article class="team ${own?'selected':''}"><div class="team-top"><div><h3>${esc(t.name)}</h3><div class="genre">${esc(t.genre||"")}</div></div><span class="pill">${own?"참여 완료":data.settled?(data.winner===t.id?"우승":"종료"):"참여 가능"}</span></div><div class="team-desc">${esc(t.desc||"")}</div><div class="bar"><i style="width:${pct}%"></i></div><div class="percent"><span>${count}표 · ${totalStake(t.id).toLocaleString()} P</span><b>${pct}%</b></div><button class="secondary small" ${own||data.settled?"disabled":""} onclick="selectTeam(${t.id})">${own?"이미 참여함":"이 팀 선택"}</button></article>`;
- }).join("");
- const opts=data.teams.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join("");
- document.getElementById("teamSelect").innerHTML=opts;
- document.getElementById("winnerSelect").innerHTML=opts;
- document.getElementById("results").innerHTML=data.teams.map(t=>`<div style="margin:13px 0"><div class="percent"><span>${esc(t.name)} · ${totalVotes(t.id)}표</span><b>${all?Math.round(totalVotes(t.id)/all*100):0}%</b></div><div class="bar"><i style="width:${all?totalVotes(t.id)/all*100:0}%"></i></div></div>`).join("")+(data.settled?`<p class="hint">최종 우승: <b>${esc(data.teams.find(t=>t.id===data.winner)?.name||"")}</b></p>`:"");
- const users=[{name:data.name,points:data.points},...data.users].sort((a,b)=>b.points-a.points);
- document.getElementById("ranking").innerHTML=users.slice(0,8).map((u,i)=>`<div class="rankrow"><div class="rankleft"><span class="ranknum">${i+1}</span><b>${esc(u.name)}</b></div><span class="rankpoints">${u.points.toLocaleString()} P</span></div>`).join("");
- document.getElementById("betBox").style.opacity=data.settled?".55":"1";
+
+const USER_KEY = "stagepick_user_id_v1";
+let myUserId = localStorage.getItem(USER_KEY);
+if (!myUserId) {
+  myUserId = "u_" + Math.random().toString(36).slice(2, 10);
+  localStorage.setItem(USER_KEY, myUserId);
 }
-function changeName(){const n=prompt("사용할 닉네임을 입력하세요.",data.name);if(n&&n.trim()){data.name=n.trim().slice(0,16);save()}}
-function selectTeam(id){document.getElementById("teamSelect").value=id;document.getElementById("stake").focus()}
-function placeBet(){
- if(data.settled)return msg("betMessage","이미 결과가 발표됐습니다.");
- const id=Number(document.getElementById("teamSelect").value),amount=Math.floor(Number(document.getElementById("stake").value));
- if(data.bets.some(b=>b.user===data.name&&b.team===id))return msg("betMessage","이 팀에는 이미 참여했습니다.");
- if(!Number.isFinite(amount)||amount<1)return msg("betMessage","1P 이상 입력하세요.");
- if(amount>data.points)return msg("betMessage","보유 포인트보다 많이 걸 수 없습니다.");
- data.points-=amount;data.bets.push({user:data.name,team:id,amount});msg("betMessage","참여가 완료됐습니다.");save();
+
+let state = {
+  teams: initialTeams,
+  bets: [],
+  settled: false,
+  winner: null,
+  users: {}
+};
+
+function ensureMyUser() {
+  if (!state.users[myUserId]) {
+    const num = Object.keys(state.users).length + 1;
+    state.users[myUserId] = { name: `게스트${num}`, points: 1000 };
+  }
 }
-function msg(id,s){document.getElementById(id).textContent=s}
-function toggleAdmin(){document.getElementById("admin").classList.toggle("open")}
-function addTeam(){const n=document.getElementById("adminTeamName").value.trim();if(!n)return msg("adminMessage","팀 이름을 입력하세요.");data.teams.push({id:Date.now(),name:n,genre:document.getElementById("adminGenre").value.trim(),desc:"새로 추가된 참가 무대"});document.getElementById("adminTeamName").value="";save();msg("adminMessage","팀을 추가했습니다.")}
-function settle(){
- if(data.settled)return msg("adminMessage","이미 정산이 끝났습니다.");
- if(!data.bets.length)return msg("adminMessage","참여 기록이 없습니다.");
- const winner=Number(document.getElementById("winnerSelect").value),winning=data.bets.filter(b=>b.team===winner),losingPool=data.bets.filter(b=>b.team!==winner).reduce((s,b)=>s+b.amount,0),winningPool=winning.reduce((s,b)=>s+b.amount,0);
- if(!winning.length)return msg("adminMessage","해당 팀에 건 포인트가 없어 정산할 수 없습니다.");
- // 이 데모는 현재 브라우저 사용자 한 명의 포인트만 정산합니다.
- const myWinning=data.bets.filter(b=>b.user===data.name&&b.team===winner).reduce((s,b)=>s+b.amount,0);
- if(myWinning>0)data.points+=myWinning+Math.floor(losingPool*myWinning/winningPool);
- data.settled=true;data.winner=winner;save();msg("adminMessage","결과 발표 및 정산을 완료했습니다. (데모 사용자 기준)");
+
+function getMe() {
+  ensureMyUser();
+  return state.users[myUserId];
 }
-function resetDemo(){if(!confirm("모든 데모 데이터를 초기화할까요?"))return;localStorage.removeItem(KEY);data={name:"게스트",points:1000,teams:initialTeams,bets:[],settled:false,winner:null,users:[]};save();msg("adminMessage","초기화했습니다.")}
-render();
+
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+function totalVotes(id) {
+  return state.bets.filter(b => b.team === id).length;
+}
+
+function totalStake(id) {
+  return state.bets.filter(b => b.team === id).reduce((a, b) => a + b.amount, 0);
+}
+
+async function saveState() {
+  await setDoc(roomRef, {
+    teams: state.teams,
+    bets: state.bets,
+    settled: state.settled,
+    winner: state.winner,
+    users: state.users
+  });
+}
+
+function render() {
+  const me = getMe();
+  document.getElementById("userLabel").textContent = me.name;
+  document.getElementById("profilePoints").textContent = me.points.toLocaleString() + " P";
+  document.getElementById("myPoints").textContent = me.points.toLocaleString() + " P";
+  document.getElementById("myVote").textContent = state.bets.filter(b => b.userId === myUserId).length + "회";
+  document.getElementById("teamCount").textContent = state.teams.length + "팀";
+
+  const all = state.bets.length;
+  document.getElementById("teams").innerHTML = state.teams.map(t => {
+    const count = totalVotes(t.id);
+    const pct = all ? Math.round(count / all * 100) : 0;
+    const own = state.bets.some(b => b.userId === myUserId && b.team === t.id);
+    return `<article class="team ${own ? 'selected' : ''}"><div class="team-top"><div><h3>${esc(t.name)}</h3><div class="genre">${esc(t.genre || "")}</div></div><span class="pill">${own ? "참여 완료" : state.settled ? (state.winner === t.id ? "우승" : "종료") : "참여 가능"}</span></div><div class="team-desc">${esc(t.desc || "")}</div><div class="bar"><i style="width:${pct}%"></i></div><div class="percent"><span>${count}표 · ${totalStake(t.id).toLocaleString()} P</span><b>${pct}%</b></div><button class="secondary small" ${own || state.settled ? "disabled" : ""} onclick="selectTeam(${t.id})">${own ? "이미 참여함" : "이 팀 선택"}</button></article>`;
+  }).join("");
+
+  const opts = state.teams.map(t => `<option value="${t.id}">${esc(t.name)}</option>`).join("");
+  document.getElementById("teamSelect").innerHTML = opts;
+  document.getElementById("winnerSelect").innerHTML = opts;
+
+  document.getElementById("results").innerHTML = state.teams.map(t => {
+    const pct = all ? Math.round(totalVotes(t.id) / all * 100) : 0;
+    return `<div style="margin:13px 0"><div class="percent"><span>${esc(t.name)} · ${totalVotes(t.id)}표</span><b>${pct}%</b></div><div class="bar"><i style="width:${pct}%"></i></div></div>`;
+  }).join("") + (state.settled ? `<p class="hint">최종 우승: <b>${esc(state.teams.find(t => t.id === state.winner)?.name || "")}</b></p>` : "");
+
+  const ranked = Object.values(state.users).sort((a, b) => b.points - a.points);
+  document.getElementById("ranking").innerHTML = ranked.slice(0, 10).map((u, i) =>
+    `<div class="rankrow"><div class="rankleft"><span class="ranknum">${i + 1}</span><b>${esc(u.name)}</b></div><span class="rankpoints">${u.points.toLocaleString()} P</span></div>`
+  ).join("");
+
+  document.getElementById("betBox").style.opacity = state.settled ? ".55" : "1";
+}
+
+function msg(id, s) {
+  document.getElementById(id).textContent = s;
+}
+
+window.changeName = async function() {
+  const me = getMe();
+  const n = prompt("사용할 닉네임을 입력하세요.", me.name);
+  if (n && n.trim()) {
+    me.name = n.trim().slice(0, 16);
+    render();
+    await saveState();
+  }
+};
+
+window.selectTeam = function(id) {
+  document.getElementById("teamSelect").value = id;
+  document.getElementById("stake").focus();
+};
+
+window.placeBet = async function() {
+  const me = getMe();
+  if (state.settled) return msg("betMessage", "이미 결과가 발표됐습니다.");
+  const id = Number(document.getElementById("teamSelect").value);
+  const amount = Math.floor(Number(document.getElementById("stake").value));
+  if (state.bets.some(b => b.userId === myUserId && b.team === id)) return msg("betMessage", "이 팀에는 이미 참여했습니다.");
+  if (!Number.isFinite(amount) || amount < 1) return msg("betMessage", "1P 이상 입력하세요.");
+  if (amount > me.points) return msg("betMessage", "보유 포인트보다 많이 걸 수 없습니다.");
+
+  me.points -= amount;
+  state.bets.push({ userId: myUserId, userName: me.name, team: id, amount });
+  render();
+  await saveState();
+  msg("betMessage", "참여가 완료됐고 실시간으로 반영됐습니다.");
+};
+
+window.toggleAdmin = function() {
+  document.getElementById("admin").classList.toggle("open");
+};
+
+window.addTeam = async function() {
+  const n = document.getElementById("adminTeamName").value.trim();
+  if (!n) return msg("adminMessage", "팀 이름을 입력하세요.");
+  state.teams.push({
+    id: Date.now(),
+    name: n,
+    genre: document.getElementById("adminGenre").value.trim(),
+    desc: "새로 추가된 참가 무대"
+  });
+  document.getElementById("adminTeamName").value = "";
+  render();
+  await saveState();
+  msg("adminMessage", "팀을 추가했습니다.");
+};
+
+window.settle = async function() {
+  if (state.settled) return msg("adminMessage", "이미 정산이 끝났습니다.");
+  if (!state.bets.length) return msg("adminMessage", "참여 기록이 없습니다.");
+  const winner = Number(document.getElementById("winnerSelect").value);
+  const winningBets = state.bets.filter(b => b.team === winner);
+  const losingPool = state.bets.filter(b => b.team !== winner).reduce((s, b) => s + b.amount, 0);
+  const winningPool = winningBets.reduce((s, b) => s + b.amount, 0);
+  if (!winningBets.length) return msg("adminMessage", "해당 팀에 건 포인트가 없어 정산할 수 없습니다.");
+
+  winningBets.forEach(b => {
+    if (state.users[b.userId]) {
+      state.users[b.userId].points += b.amount + Math.floor(losingPool * b.amount / winningPool);
+    }
+  });
+  state.settled = true;
+  state.winner = winner;
+  render();
+  await saveState();
+  msg("adminMessage", "우승팀 발표 및 전체 사용자 포인트 정산을 완료했습니다.");
+};
+
+window.resetDemo = async function() {
+  if (!confirm("모든 실시간 데이터를 초기화할까요?")) return;
+  const resetUsers = {};
+  Object.keys(state.users).forEach(uid => {
+    resetUsers[uid] = { name: state.users[uid].name, points: 1000 };
+  });
+  state = {
+    teams: initialTeams,
+    bets: [],
+    settled: false,
+    winner: null,
+    users: resetUsers
+  };
+  ensureMyUser();
+  render();
+  await saveState();
+  msg("adminMessage", "초기화했습니다.");
+};
+
+async function init() {
+  const snap = await getDoc(roomRef);
+  if (!snap.exists()) {
+    ensureMyUser();
+    await saveState();
+  }
+  onSnapshot(roomRef, (docSnap) => {
+    if (docSnap.exists()) {
+      const d = docSnap.data();
+      state.teams = d.teams || initialTeams;
+      state.bets = d.bets || [];
+      state.settled = Boolean(d.settled);
+      state.winner = d.winner ?? null;
+      state.users = d.users || {};
+    }
+    ensureMyUser();
+    render();
+  });
+}
+
+init();
 </script>
 </body>
 </html>
