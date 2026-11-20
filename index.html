@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -111,7 +112,7 @@ footer{text-align:center;color:#6f7a8d;font-size:11px;margin-top:35px}
   <section class="hero">
     <div class="eyebrow">CAMPUS STAGE PREDICTION</div>
     <h1>오늘의 Best Of Best는??</h1>
-    <p>로그인 후 마음에 드는 팀에 투표하고 포인트를 걸어보세요.<br>실제 베오베를 맞히면 전체 배팅 포인트를 정답자끼리 똑같이 나눕니다.</p>
+    <p>로그인 후 마음에 드는 팀에 투표하고 포인트를 걸어보세요.<br>베오베를 맞히면 전체 배팅 포인트를 배팅 비율에 따라 나눠 갖습니다.</p>
   </section>
 
   <section class="stats">
@@ -130,7 +131,7 @@ footer{text-align:center;color:#6f7a8d;font-size:11px;margin-top:35px}
       <input class="field" id="stake" type="number" min="1" step="50" value="100" placeholder="걸 포인트">
       <button onclick="placeBet()">투표하고 포인트 걸기</button>
     </div>
-    <div class="hint">팀당 한 번 참여할 수 있습니다. 베오베를 맞힌 사람들끼리 전체 배팅 포인트를 동일하게 분배(1/N)받습니다.</div>
+    <div class="hint">팀당 한 번 참여할 수 있습니다. 우승팀에 배팅한 사람들은 자신이 건 포인트 비율에 따라 전체 배팅 포인트를 나눠 받습니다.</div>
     <div id="betMessage" class="hint"></div>
   </section>
 
@@ -716,30 +717,86 @@ window.deleteTeam = async function(id) {
   msg("adminMessage",`'${team.name}' 팀을 삭제했습니다. 삭제된 팀의 배팅 포인트는 반환했습니다.`);
 };
 
+/* 변경된 정산 함수 */
 window.settle = async function() {
-  if (state.settled) return msg("adminMessage","이미 정산이 끝났습니다.");
-  if (!state.bets.length) return msg("adminMessage","참여 기록이 없습니다.");
+  if (state.settled) {
+    return msg("adminMessage","이미 정산이 끝났습니다.");
+  }
+
+  if (!state.bets.length) {
+    return msg("adminMessage","참여 기록이 없습니다.");
+  }
 
   const winner = Number(document.getElementById("winnerSelect").value);
+
   const winningBets = state.bets.filter(b => b.team === winner);
 
-  if (!winningBets.length) return msg("adminMessage","해당 팀에 투표한 사람이 없어 정산할 수 없습니다.");
+  if (!winningBets.length) {
+    return msg("adminMessage","해당 팀에 배팅한 사람이 없어 정산할 수 없습니다.");
+  }
 
-  const totalPool = state.bets.reduce((s,b) => s + Number(b.amount || 0),0);
-  const share = Math.floor(totalPool / winningBets.length);
+  // 전체 배팅 포인트
+  const totalPool = state.bets.reduce(
+    (sum,b) => sum + Number(b.amount || 0),0
+  );
 
-  winningBets.forEach(b => {
-    if (state.users[b.userId]) {
-      state.users[b.userId].points += share;
+  // 우승팀에 배팅한 전체 포인트
+  const winningPool = winningBets.reduce(
+    (sum,b) => sum + Number(b.amount || 0),0
+  );
+
+  if (winningPool <= 0) {
+    return msg("adminMessage","우승팀의 배팅 금액이 올바르지 않습니다.");
+  }
+
+  // 각 배팅자의 배팅 비율에 따른 지급액 계산
+  const shares = winningBets.map((b,index) => {
+    const exact = totalPool * Number(b.amount || 0) / winningPool;
+    const payout = Math.floor(exact);
+
+    return {
+      bet:b,
+      index,
+      payout,
+      remainder:exact-payout
+    };
+  });
+
+  // 소수점으로 남은 포인트를 잔여 비율이 큰 순서대로 배분
+  let remainingPoints = totalPool - shares.reduce(
+    (sum,s) => sum + s.payout,0
+  );
+
+  const remainderOrder = [...shares].sort(
+    (a,b) => b.remainder-a.remainder || a.index-b.index
+  );
+
+  for (let i=0; i<remainingPoints; i++) {
+    remainderOrder[i].payout += 1;
+  }
+
+  // 정산 포인트 지급
+  shares.forEach(s => {
+    const user = state.users[s.bet.userId];
+
+    if (user) {
+      user.points = Number(user.points || 0) + s.payout;
     }
   });
 
   state.settled = true;
   state.winner = winner;
+
   render();
   await saveState();
 
-  msg("adminMessage",`베오베 발표 완료! 총 ${totalPool.toLocaleString()} P를 정답자 ${winningBets.length}명에게 1인당 ${share.toLocaleString()} P씩 균등 분배했습니다.`);
+  const winnerName =
+    state.teams.find(t => t.id === winner)?.name || "우승팀";
+
+  msg(
+    "adminMessage",
+    `${winnerName} 정산 완료! 전체 배팅 포인트 ${totalPool.toLocaleString()} P를 우승팀 배팅 비율에 따라 ${winningBets.length}명에게 분배했습니다.`
+  );
 };
 
 window.resetRound = async function() {
