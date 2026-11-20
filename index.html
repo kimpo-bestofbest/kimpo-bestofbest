@@ -96,6 +96,8 @@ const firebaseConfig = {
   measurementId: "G-0L8Z3CB7Z2"
 };
 
+const ADMIN_PASS = "6230"; // 원하는 운영자 비밀번호로 변경하세요
+
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const roomRef = doc(db, "stages", "current_stage");
@@ -113,6 +115,8 @@ if (!myUserId) {
   myUserId = "u_" + Math.random().toString(36).slice(2, 10);
   localStorage.setItem(USER_KEY, myUserId);
 }
+
+let adminAuthed = false;
 
 let state = {
   teams: initialTeams,
@@ -225,7 +229,21 @@ window.placeBet = async function() {
 };
 
 window.toggleAdmin = function() {
-  document.getElementById("admin").classList.toggle("open");
+  const panel = document.getElementById("admin");
+  if (panel.classList.contains("open")) {
+    panel.classList.remove("open");
+    return;
+  }
+  if (!adminAuthed) {
+    const pw = prompt("운영자 비밀번호를 입력하세요.");
+    if (pw === null) return;
+    if (pw !== ADMIN_PASS) {
+      alert("비밀번호가 올바르지 않습니다.");
+      return;
+    }
+    adminAuthed = true;
+  }
+  panel.classList.add("open");
 };
 
 window.addTeam = async function() {
