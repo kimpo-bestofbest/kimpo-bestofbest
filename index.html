@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>무대픽 | 공연 승부예측</title>
+<style>
+:root{--bg:#10131b;--panel:#191e2a;--panel2:#202737;--text:#f4f6fb;--muted:#9ba6b8;--accent:#a78bfa;--accent2:#7c5ce7;--line:#30394b;--green:#56d6a0;--red:#ff7b86}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#24203c 0,#10131b 48%);color:var(--text);font-family:system-ui,-apple-system,"Noto Sans KR",sans-serif}
+.wrap{max-width:1050px;margin:auto;padding:28px 18px 60px}.top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:28px}
+.brand{font-weight:900;font-size:22px;letter-spacing:-1px}.brand span{color:var(--accent)}.tag{color:var(--muted);font-size:13px;margin-top:4px}
+.profile{background:var(--panel);border:1px solid var(--line);padding:10px 14px;border-radius:14px;display:flex;align-items:center;gap:10px}
+.points{font-weight:800;color:#d7caff}.hero{padding:30px;border:1px solid #40365e;border-radius:24px;background:linear-gradient(120deg,#30264c,#1c2435 70%);margin-bottom:22px}
+.eyebrow{font-size:12px;color:#c6b6ff;font-weight:800;letter-spacing:1.5px}.hero h1{font-size:clamp(27px,5vw,42px);margin:9px 0 8px;letter-spacing:-1.5px}.hero p{margin:0;color:#c2c7d4;line-height:1.6}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0 28px}.stat{background:var(--panel);border:1px solid var(--line);padding:16px;border-radius:16px}.stat small{color:var(--muted)}.stat strong{display:block;font-size:22px;margin-top:5px}
+.section-head{display:flex;justify-content:space-between;align-items:end;gap:10px;margin:28px 0 14px}.section-head h2{font-size:20px;margin:0}.section-head span{font-size:12px;color:var(--muted)}
+.teams{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.team{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;position:relative;overflow:hidden}.team.selected{border-color:var(--accent);box-shadow:0 0 0 1px #a78bfa44}.team-top{display:flex;justify-content:space-between;gap:10px}.team h3{margin:0;font-size:18px}.genre{font-size:12px;color:var(--muted);margin-top:5px}.team-desc{color:#c2c8d4;font-size:13px;line-height:1.5;margin:14px 0}
+.bar{height:7px;background:#30394b;border-radius:20px;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent2),#c4a9ff);border-radius:20px}.percent{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;margin:7px 0 14px}
+button{border:0;border-radius:11px;padding:11px 14px;background:var(--accent2);color:white;font-weight:800;cursor:pointer;font-size:14px}button:hover{filter:brightness(1.12)}button:disabled{opacity:.4;cursor:not-allowed}.secondary{background:#30394b;color:#e3e7ef}.small{padding:8px 11px;font-size:12px}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;margin-top:16px}.formrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.field{background:#101520;border:1px solid var(--line);border-radius:10px;color:var(--text);padding:11px 12px;min-width:0;flex:1;font:inherit}.hint{color:var(--muted);font-size:12px;line-height:1.5;margin-top:9px}
+.two{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}.rankrow{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line)}.rankrow:last-child{border:0}.rankleft{display:flex;align-items:center;gap:10px}.ranknum{width:25px;height:25px;display:grid;place-items:center;background:#30394b;border-radius:8px;font-size:12px;font-weight:800}.rankpoints{font-weight:800;color:#d7caff}
+.notice{background:#282338;border:1px solid #51416f;border-radius:12px;padding:12px;color:#d7caff;font-size:12px;line-height:1.5;margin-top:16px}
+.admin{display:none}.admin.open{display:block}.pill{font-size:11px;background:#30394b;color:#cbd3e1;padding:5px 8px;border-radius:20px;white-space:nowrap}
+footer{text-align:center;color:#6f7a8d;font-size:11px;margin-top:35px}
+@media(max-width:700px){.teams,.two{grid-template-columns:1fr}.stats{gap:8px}.stat{padding:12px}.stat strong{font-size:18px}.hero{padding:22px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div><div class="brand">무대<span>픽</span> ✦</div><div class="tag">오늘의 무대, 우승팀을 예측해 보세요.</div></div>
+    <div class="profile"><span id="userLabel">게스트</span><span class="points" id="profilePoints">1,000 P</span><button class="secondary small" onclick="changeName()">닉네임 설정</button></div>
+  </header>
+
+  <section class="hero">
+    <div class="eyebrow">CAMPUS STAGE PREDICTION</div>
+    <h1>이번 무대의 주인공은<br>누가 될까?</h1>
+    <p>마음에 드는 팀에 투표하고 포인트를 걸어보세요.<br>실제 우승팀을 맞히면 포인트를 정산합니다.</p>
+  </section>
+
+  <section class="stats">
+    <div class="stat"><small>내 보유 포인트</small><strong id="myPoints">1,000 P</strong></div>
+    <div class="stat"><small>참여한 투표</small><strong id="myVote">0회</strong></div>
+    <div class="stat"><small>참여 팀 수</small><strong id="teamCount">4팀</strong></div>
+  </section>
+
+  <div class="section-head"><h2>참가 무대</h2><span>팀을 선택해 예측에 참여하세요</span></div>
+  <section class="teams" id="teams"></section>
+
+  <section class="box" id="betBox">
+    <div class="section-head" style="margin:0"><h2>예측 참여하기</h2><span>가상 포인트 사용</span></div>
+    <div class="formrow">
+      <select class="field" id="teamSelect" aria-label="예측할 팀"></select>
+      <input class="field" id="stake" type="number" min="1" step="50" value="100" placeholder="걸 포인트">
+      <button onclick="placeBet()">투표하고 포인트 걸기</button>
+    </div>
+    <div class="hint">팀당 한 번 참여할 수 있습니다. 포인트는 실제 현금이나 상품이 아닌 사이트 내 가상 점수입니다.</div>
+    <div id="betMessage" class="hint"></div>
+  </section>
+
+  <div class="two">
+    <section class="box">
+      <div class="section-head" style="margin:0 0 8px"><h2>참여 현황</h2><span>전체 투표 비율</span></div>
+      <div id="results"></div>
+    </section>
+    <section class="box">
+      <div class="section-head" style="margin:0 0 8px"><h2>포인트 랭킹</h2><span>이 브라우저 기준</span></div>
+      <div id="ranking"></div>
+    </section>
+  </div>
+
+  <section class="box">
+    <div class="section-head" style="margin:0"><h2>운영자 메뉴</h2><button class="secondary small" onclick="toggleAdmin()">열기 / 닫기</button></div>
+    <div class="admin" id="admin">
+      <p class="hint">시연용 운영자 메뉴입니다. 실제 서비스에서는 운영자 로그인과 권한 확인이 필요합니다.</p>
+      <div class="formrow"><input class="field" id="adminTeamName" placeholder="팀 이름"><input class="field" id="adminGenre" placeholder="장르 / 설명"><button onclick="addTeam()">팀 추가</button></div>
+      <div class="formrow"><select class="field" id="winnerSelect"></select><button onclick="settle()">우승팀 발표 및 포인트 정산</button><button class="secondary" onclick="resetDemo()">초기화</button></div>
+      <div id="adminMessage" class="hint"></div>
+    </div>
+  </section>
+  <div class="notice">현재 버전은 기능 확인용 데모입니다. 데이터가 이 브라우저에만 저장되므로 다른 학생의 투표와 합쳐지지 않습니다. 실제 학생들이 함께 쓰려면 온라인 데이터베이스와 로그인 기능을 연결해야 합니다.</div>
+  <footer>무대픽 · Campus Stage Prediction · 가상 포인트 전용</footer>
+</div>
+<script>
+const initialTeams=[
+ {id:1,name:"팀 A",genre:"밴드 · 록",desc:"에너지 넘치는 밴드 퍼포먼스"},
+ {id:2,name:"팀 B",genre:"재즈 · 퓨전",desc:"탄탄한 합주와 즉흥 연주"},
+ {id:3,name:"팀 C",genre:"어쿠스틱 · 팝",desc:"감성적인 보컬 중심 무대"},
+ {id:4,name:"팀 D",genre:"댄스 · 퍼포먼스",desc:"강렬한 퍼포먼스와 무대 연출"}
+];
+const KEY="stagepick_demo_v1";
+let data=JSON.parse(localStorage.getItem(KEY)||"null")||{name:"게스트",points:1000,teams:initialTeams,bets:[],settled:false,winner:null,users:[]};
+function save(){localStorage.setItem(KEY,JSON.stringify(data));render()}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function totalVotes(id){return data.bets.filter(b=>b.team===id).length}
+function totalStake(id){return data.bets.filter(b=>b.team===id).reduce((a,b)=>a+b.amount,0)}
+function render(){
+ document.getElementById("userLabel").textContent=data.name;
+ document.getElementById("profilePoints").textContent=data.points.toLocaleString()+" P";
+ document.getElementById("myPoints").textContent=data.points.toLocaleString()+" P";
+ document.getElementById("myVote").textContent=data.bets.filter(b=>b.user===data.name).length+"회";
+ document.getElementById("teamCount").textContent=data.teams.length+"팀";
+ const all=data.bets.length;
+ document.getElementById("teams").innerHTML=data.teams.map(t=>{
+  const count=totalVotes(t.id),pct=all?Math.round(count/all*100):0,own=data.bets.some(b=>b.user===data.name&&b.team===t.id);
+  return `<article class="team ${own?'selected':''}"><div class="team-top"><div><h3>${esc(t.name)}</h3><div class="genre">${esc(t.genre||"")}</div></div><span class="pill">${own?"참여 완료":data.settled?(data.winner===t.id?"우승":"종료"):"참여 가능"}</span></div><div class="team-desc">${esc(t.desc||"")}</div><div class="bar"><i style="width:${pct}%"></i></div><div class="percent"><span>${count}표 · ${totalStake(t.id).toLocaleString()} P</span><b>${pct}%</b></div><button class="secondary small" ${own||data.settled?"disabled":""} onclick="selectTeam(${t.id})">${own?"이미 참여함":"이 팀 선택"}</button></article>`;
+ }).join("");
+ const opts=data.teams.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join("");
+ document.getElementById("teamSelect").innerHTML=opts;
+ document.getElementById("winnerSelect").innerHTML=opts;
+ document.getElementById("results").innerHTML=data.teams.map(t=>`<div style="margin:13px 0"><div class="percent"><span>${esc(t.name)} · ${totalVotes(t.id)}표</span><b>${all?Math.round(totalVotes(t.id)/all*100):0}%</b></div><div class="bar"><i style="width:${all?totalVotes(t.id)/all*100:0}%"></i></div></div>`).join("")+(data.settled?`<p class="hint">최종 우승: <b>${esc(data.teams.find(t=>t.id===data.winner)?.name||"")}</b></p>`:"");
+ const users=[{name:data.name,points:data.points},...data.users].sort((a,b)=>b.points-a.points);
+ document.getElementById("ranking").innerHTML=users.slice(0,8).map((u,i)=>`<div class="rankrow"><div class="rankleft"><span class="ranknum">${i+1}</span><b>${esc(u.name)}</b></div><span class="rankpoints">${u.points.toLocaleString()} P</span></div>`).join("");
+ document.getElementById("betBox").style.opacity=data.settled?".55":"1";
+}
+function changeName(){const n=prompt("사용할 닉네임을 입력하세요.",data.name);if(n&&n.trim()){data.name=n.trim().slice(0,16);save()}}
+function selectTeam(id){document.getElementById("teamSelect").value=id;document.getElementById("stake").focus()}
+function placeBet(){
+ if(data.settled)return msg("betMessage","이미 결과가 발표됐습니다.");
+ const id=Number(document.getElementById("teamSelect").value),amount=Math.floor(Number(document.getElementById("stake").value));
+ if(data.bets.some(b=>b.user===data.name&&b.team===id))return msg("betMessage","이 팀에는 이미 참여했습니다.");
+ if(!Number.isFinite(amount)||amount<1)return msg("betMessage","1P 이상 입력하세요.");
+ if(amount>data.points)return msg("betMessage","보유 포인트보다 많이 걸 수 없습니다.");
+ data.points-=amount;data.bets.push({user:data.name,team:id,amount});msg("betMessage","참여가 완료됐습니다.");save();
+}
+function msg(id,s){document.getElementById(id).textContent=s}
+function toggleAdmin(){document.getElementById("admin").classList.toggle("open")}
+function addTeam(){const n=document.getElementById("adminTeamName").value.trim();if(!n)return msg("adminMessage","팀 이름을 입력하세요.");data.teams.push({id:Date.now(),name:n,genre:document.getElementById("adminGenre").value.trim(),desc:"새로 추가된 참가 무대"});document.getElementById("adminTeamName").value="";save();msg("adminMessage","팀을 추가했습니다.")}
+function settle(){
+ if(data.settled)return msg("adminMessage","이미 정산이 끝났습니다.");
+ if(!data.bets.length)return msg("adminMessage","참여 기록이 없습니다.");
+ const winner=Number(document.getElementById("winnerSelect").value),winning=data.bets.filter(b=>b.team===winner),losingPool=data.bets.filter(b=>b.team!==winner).reduce((s,b)=>s+b.amount,0),winningPool=winning.reduce((s,b)=>s+b.amount,0);
+ if(!winning.length)return msg("adminMessage","해당 팀에 건 포인트가 없어 정산할 수 없습니다.");
+ // 이 데모는 현재 브라우저 사용자 한 명의 포인트만 정산합니다.
+ const myWinning=data.bets.filter(b=>b.user===data.name&&b.team===winner).reduce((s,b)=>s+b.amount,0);
+ if(myWinning>0)data.points+=myWinning+Math.floor(losingPool*myWinning/winningPool);
+ data.settled=true;data.winner=winner;save();msg("adminMessage","결과 발표 및 정산을 완료했습니다. (데모 사용자 기준)");
+}
+function resetDemo(){if(!confirm("모든 데모 데이터를 초기화할까요?"))return;localStorage.removeItem(KEY);data={name:"게스트",points:1000,teams:initialTeams,bets:[],settled:false,winner:null,users:[]};save();msg("adminMessage","초기화했습니다.")}
+render();
+</script>
+</body>
+</html>
