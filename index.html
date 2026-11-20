@@ -6,27 +6,68 @@
 <title>김포대 퍼포먼스 수업 | 공연 승부예측</title>
 <style>
 :root{--bg:#10131b;--panel:#191e2a;--panel2:#202737;--text:#f4f6fb;--muted:#9ba6b8;--accent:#a78bfa;--accent2:#7c5ce7;--line:#30394b;--green:#56d6a0;--red:#ff7b86}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#24203c 0,#10131b 48%);color:var(--text);font-family:system-ui,-apple-system,"Noto Sans KR",sans-serif}
-.wrap{max-width:1050px;margin:auto;padding:28px 18px 60px}.top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:28px}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at top,#24203c 0,#10131b 48%);color:var(--text);font-family:system-ui,-apple-system,"Noto Sans KR",sans-serif}
+.wrap{max-width:1050px;margin:auto;padding:28px 18px 60px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:28px}
 .top-notice{background:linear-gradient(90deg,#342659,#232942);border:1px solid #6b54a3;border-radius:14px;padding:13px 16px;margin-bottom:18px;display:none;align-items:center;gap:10px;line-height:1.5;font-size:13px;color:#efeaff;box-shadow:0 6px 20px rgba(0,0,0,.25)}
 .top-notice-badge{background:var(--accent2);color:#fff;font-size:11px;font-weight:800;padding:3px 8px;border-radius:999px;white-space:nowrap}
-.brand{font-weight:900;font-size:22px;letter-spacing:-1px}.brand span{color:var(--accent)}.tag{color:var(--muted);font-size:13px;margin-top:4px}
+.brand{font-weight:900;font-size:22px;letter-spacing:-1px}
+.brand span{color:var(--accent)}
+.tag{color:var(--muted);font-size:13px;margin-top:4px}
 .profile{background:var(--panel);border:1px solid var(--line);padding:10px 14px;border-radius:14px;display:flex;align-items:center;gap:10px}
-.points{font-weight:800;color:#d7caff}.hero{padding:30px;border:1px solid #40365e;border-radius:24px;background:linear-gradient(120deg,#30264c,#1c2435 70%);margin-bottom:22px}
-.eyebrow{font-size:12px;color:#c6b6ff;font-weight:800;letter-spacing:1.5px}.hero h1{font-size:clamp(27px,5vw,42px);margin:9px 0 8px;letter-spacing:-1.5px}.hero p{margin:0;color:#c2c7d4;line-height:1.6}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0 28px}.stat{background:var(--panel);border:1px solid var(--line);padding:16px;border-radius:16px}.stat small{color:var(--muted)}.stat strong{display:block;font-size:22px;margin-top:5px}
-.section-head{display:flex;justify-content:space-between;align-items:end;gap:10px;margin:28px 0 14px}.section-head h2{font-size:20px;margin:0}.section-head span{font-size:12px;color:var(--muted)}
-.teams{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.team{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;position:relative;overflow:hidden}.team.selected{border-color:var(--accent);box-shadow:0 0 0 1px #a78bfa44}.team-top{display:flex;justify-content:space-between;gap:10px}.team h3{margin:0;font-size:18px}.genre{font-size:12px;color:var(--muted);margin-top:5px}.team-desc{color:#c2c8d4;font-size:13px;line-height:1.5;margin:14px 0}
-.bar{height:7px;background:#30394b;border-radius:20px;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent2),#c4a9ff);border-radius:20px}.bar.pt i{background:linear-gradient(90deg,#2fa877,var(--green))}
+.points{font-weight:800;color:#d7caff}
+.hero{padding:30px;border:1px solid #40365e;border-radius:24px;background:linear-gradient(120deg,#30264c,#1c2435 70%);margin-bottom:22px}
+.eyebrow{font-size:12px;color:#c6b6ff;font-weight:800;letter-spacing:1.5px}
+.hero h1{font-size:clamp(27px,5vw,42px);margin:9px 0 8px;letter-spacing:-1.5px}
+.hero p{margin:0;color:#c2c7d4;line-height:1.6}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0 28px}
+.stat{background:var(--panel);border:1px solid var(--line);padding:16px;border-radius:16px}
+.stat small{color:var(--muted)}
+.stat strong{display:block;font-size:22px;margin-top:5px}
+.section-head{display:flex;justify-content:space-between;align-items:end;gap:10px;margin:28px 0 14px}
+.section-head h2{font-size:20px;margin:0}
+.section-head span{font-size:12px;color:var(--muted)}
+.teams{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.team{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;position:relative;overflow:hidden}
+.team.selected{border-color:var(--accent);box-shadow:0 0 0 1px #a78bfa44}
+.team-top{display:flex;justify-content:space-between;gap:10px}
+.team h3{margin:0;font-size:18px}
+.genre{font-size:12px;color:var(--muted);margin-top:5px}
+.team-actions{display:flex;gap:7px;margin-top:13px}
+.bar{height:7px;background:#30394b;border-radius:20px;overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent2),#c4a9ff);border-radius:20px}
+.bar.pt i{background:linear-gradient(90deg,#2fa877,var(--green))}
 .percent{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;margin:7px 0 14px}
-.res-item{padding:11px 0;border-bottom:1px solid var(--line)}.res-item:last-child{border:0}
+.res-item{padding:11px 0;border-bottom:1px solid var(--line)}
+.res-item:last-child{border:0}
 .res-title{display:flex;justify-content:space-between;align-items:center;font-size:14px;margin-bottom:6px}
 .res-sub{display:flex;justify-content:space-between;color:var(--muted);font-size:11px;margin:5px 0 4px}
-button{border:0;border-radius:11px;padding:11px 14px;background:var(--accent2);color:white;font-weight:800;cursor:pointer;font-size:14px}button:hover{filter:brightness(1.12)}button:disabled{opacity:.4;cursor:not-allowed}.secondary{background:#30394b;color:#e3e7ef}.small{padding:8px 11px;font-size:12px}
-.box{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;margin-top:16px}.formrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.field{background:#101520;border:1px solid var(--line);border-radius:10px;color:var(--text);padding:11px 12px;min-width:0;flex:1;font:inherit}.hint{color:var(--muted);font-size:12px;line-height:1.5;margin-top:9px}
-.two{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}.rankrow{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line)}.rankrow:last-child{border:0}.rankleft{display:flex;align-items:center;gap:10px}.ranknum{width:25px;height:25px;display:grid;place-items:center;background:#30394b;border-radius:8px;font-size:12px;font-weight:800}.rankpoints{font-weight:800;color:#d7caff}
+button{border:0;border-radius:11px;padding:11px 14px;background:var(--accent2);color:white;font-weight:800;cursor:pointer;font-size:14px}
+button:hover{filter:brightness(1.12)}
+button:disabled{opacity:.4;cursor:not-allowed}
+.secondary{background:#30394b;color:#e3e7ef}
+.danger{background:#783b48;color:#fff}
+.small{padding:8px 11px;font-size:12px}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;margin-top:16px}
+.formrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.field{background:#101520;border:1px solid var(--line);border-radius:10px;color:var(--text);padding:11px 12px;min-width:0;flex:1;font:inherit}
+.hint{color:var(--muted);font-size:12px;line-height:1.5;margin-top:9px}
+.two{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}
+.rankrow{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line)}
+.rankrow:last-child{border:0}
+.rankleft{display:flex;align-items:center;gap:10px}
+.ranknum{width:25px;height:25px;display:grid;place-items:center;background:#30394b;border-radius:8px;font-size:12px;font-weight:800}
+.rankpoints{font-weight:800;color:#d7caff}
+.my-rank{background:#282338;border:1px solid #51416f;border-radius:12px;padding:12px;margin-bottom:14px}
+.my-rank strong{color:#d7caff;font-size:20px}
+.rank-tabs{display:flex;gap:8px;margin:14px 0}
+.rank-tab{flex:1;background:#101520;color:var(--muted);border:1px solid var(--line)}
+.rank-tab.active{background:var(--accent2);color:#fff;border-color:var(--accent2)}
 .notice{background:#282338;border:1px solid #51416f;border-radius:12px;padding:12px;color:#d7caff;font-size:12px;line-height:1.5;margin-top:16px}
-.admin{display:none}.admin.open{display:block}.pill{font-size:11px;background:#30394b;color:#cbd3e1;padding:5px 8px;border-radius:20px;white-space:nowrap}
+.admin{display:none}
+.admin.open{display:block}
+.pill{font-size:11px;background:#30394b;color:#cbd3e1;padding:5px 8px;border-radius:20px;white-space:nowrap}
 .att-bar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;background:#231d38;border:1px solid #55447a;border-radius:16px;padding:14px 18px;margin-bottom:18px}
 .modal-bg{position:fixed;inset:0;background:rgba(8,10,16,.78);display:none;place-items:center;padding:18px;z-index:100}
 .modal-bg.open{display:grid}
@@ -47,7 +88,10 @@ footer{text-align:center;color:#6f7a8d;font-size:11px;margin-top:35px}
   </div>
 
   <header class="top">
-    <div><div class="brand">김포대 <span>퍼포먼스 수업</span> ✦</div><div class="tag">오늘의 무대, 베오베를 예측해 보세요.</div></div>
+    <div>
+      <div class="brand">김포대 <span>퍼포먼스 수업</span> ✦</div>
+      <div class="tag">오늘의 무대, 베오베를 예측해 보세요.</div>
+    </div>
     <div class="profile" id="profileBox">
       <span id="userLabel">로그인이 필요합니다</span>
       <span class="points" id="profilePoints" style="display:none">1,000 P</span>
@@ -95,14 +139,28 @@ footer{text-align:center;color:#6f7a8d;font-size:11px;margin-top:35px}
       <div class="section-head" style="margin:0 0 8px"><h2>참여 현황</h2><span id="resultsSummary">투표 및 포인트 비율</span></div>
       <div id="results"></div>
     </section>
+
     <section class="box">
-      <div class="section-head" style="margin:0 0 8px"><h2>누적 포인트 랭킹</h2><span>전체 실시간 순위</span></div>
+      <div class="section-head" style="margin:0 0 8px">
+        <h2>누적 포인트 랭킹</h2>
+        <span>실시간 순위</span>
+      </div>
+      <div class="my-rank" id="myRankBox">
+        <div class="hint" style="margin:0">로그인하면 내 전체 순위를 확인할 수 있습니다.</div>
+      </div>
+      <div class="rank-tabs">
+        <button class="rank-tab active" id="allRankTab" onclick="switchRanking('all')">전체 랭킹</button>
+        <button class="rank-tab" id="topRankTab" onclick="switchRanking('top')">상위 랭킹 TOP 10</button>
+      </div>
       <div id="ranking"></div>
     </section>
   </div>
 
   <section class="box">
-    <div class="section-head" style="margin:0"><h2>운영자 메뉴</h2><button class="secondary small" onclick="toggleAdmin()">열기 / 닫기</button></div>
+    <div class="section-head" style="margin:0">
+      <h2>운영자 메뉴</h2>
+      <button class="secondary small" onclick="toggleAdmin()">열기 / 닫기</button>
+    </div>
     <div class="admin" id="admin">
       <p class="hint">실시간 DB 연결 버전입니다. 공지 등록, 출석체크, 베오베 정산이 모든 사용자에게 즉시 반영됩니다.</p>
       <div class="formrow">
@@ -114,7 +172,11 @@ footer{text-align:center;color:#6f7a8d;font-size:11px;margin-top:35px}
         <button id="toggleAttendanceBtn" onclick="toggleAttendance()">출석체크 열기 (+1,000 P)</button>
         <span class="hint" id="attendanceCountLabel" style="align-self:center;margin:0">현재 출석 상태: 닫힘 (0명 출석)</span>
       </div>
-      <div class="formrow"><input class="field" id="adminTeamName" placeholder="팀 이름"><input class="field" id="adminGenre" placeholder="장르 / 설명"><button onclick="addTeam()">팀 추가</button></div>
+      <div class="formrow">
+        <input class="field" id="adminTeamName" placeholder="팀 이름">
+        <input class="field" id="adminGenre" placeholder="장르">
+        <button onclick="addTeam()">팀 추가</button>
+      </div>
       <div class="formrow">
         <select class="field" id="winnerSelect"></select>
         <button onclick="settle()">베오베 발표 및 포인트 정산</button>
@@ -124,11 +186,11 @@ footer{text-align:center;color:#6f7a8d;font-size:11px;margin-top:35px}
       <div id="adminMessage" class="hint"></div>
     </div>
   </section>
+
   <div class="notice">Firebase Firestore 실시간 데이터베이스와 연결되어 있습니다. 정산 및 출석으로 받은 포인트는 계정에 계속 누적됩니다.</div>
   <footer>김포대 퍼포먼스 수업 · Campus Stage Prediction · 가상 포인트 전용</footer>
 </div>
 
-<!-- 로그인 / 회원가입 모달 -->
 <div class="modal-bg" id="authModal" onclick="if(event.target===this)closeAuthModal()">
   <div class="modal">
     <div class="tabs">
@@ -137,12 +199,13 @@ footer{text-align:center;color:#6f7a8d;font-size:11px;margin-top:35px}
     </div>
     <div style="display:flex;flex-direction:column;gap:10px">
       <input class="field" id="authName" placeholder="본인 이름 (아이디로 사용됩니다)" maxlength="16" autocomplete="username">
-      <input class="field" id="authPass" type="password" placeholder="비밀번호" maxlength="32" autocomplete="current-password">
+      <input class="field" id="authPass" type="password" placeholder="비밀번호 4자리" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" autocomplete="current-password">
       <button id="authSubmitBtn" onclick="submitAuth()">로그인</button>
     </div>
     <div id="authNotice" class="warn-text" style="display:none">
       ※ 아이디 분실시 도와드릴 수 없습니다.<br>
-      ※ 아이디를 본인 이름으로 하지 않을 시 계정이 삭제될 수 있습니다.
+      ※ 아이디를 본인 이름으로 하지 않을 시 계정이 삭제될 수 있습니다.<br>
+      ※ 비밀번호는 숫자 4자리로 설정해야 합니다.
     </div>
     <div id="authError" class="hint" style="color:var(--red)"></div>
     <div style="text-align:right;margin-top:12px">
@@ -165,7 +228,7 @@ const firebaseConfig = {
   measurementId: "G-0L8Z3CB7Z2"
 };
 
-const ADMIN_PASS = "1234"; // 원하는 운영자 비밀번호로 변경하세요
+const ADMIN_PASS = "1234";
 const ATTENDANCE_REWARD = 1000;
 
 const app = initializeApp(firebaseConfig);
@@ -173,16 +236,17 @@ const db = getFirestore(app);
 const roomRef = doc(db, "stages", "current_stage");
 
 const initialTeams = [
-  {id:1,name:"팀 A",genre:"밴드 · 록",desc:"에너지 넘치는 밴드 퍼포먼스"},
-  {id:2,name:"팀 B",genre:"재즈 · 퓨전",desc:"탄탄한 합주와 즉흥 연주"},
-  {id:3,name:"팀 C",genre:"어쿠스틱 · 팝",desc:"감성적인 보컬 중심 무대"},
-  {id:4,name:"팀 D",genre:"댄스 · 퍼포먼스",desc:"강렬한 퍼포먼스와 무대 연출"}
+  {id:1,name:"팀 A",genre:"밴드 · 록"},
+  {id:2,name:"팀 B",genre:"재즈 · 퓨전"},
+  {id:3,name:"팀 C",genre:"어쿠스틱 · 팝"},
+  {id:4,name:"팀 D",genre:"댄스 · 퍼포먼스"}
 ];
 
 const SESSION_KEY = "stagepick_logged_user_v1";
 let currentUser = localStorage.getItem(SESSION_KEY) || null;
 let authMode = "login";
 let adminAuthed = false;
+let rankingMode = "all";
 
 let state = {
   teams: initialTeams,
@@ -201,7 +265,9 @@ function getMe() {
 }
 
 function esc(s) {
-  return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  return String(s ?? "").replace(/[&<>"']/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[c]));
 }
 
 function totalVotes(id) {
@@ -209,7 +275,7 @@ function totalVotes(id) {
 }
 
 function totalStake(id) {
-  return state.bets.filter(b => b.team === id).reduce((a, b) => a + b.amount, 0);
+  return state.bets.filter(b => b.team === id).reduce((a,b) => a + Number(b.amount || 0),0);
 }
 
 async function saveState() {
@@ -225,11 +291,50 @@ async function saveState() {
   });
 }
 
+function renderRanking() {
+  const ranked = Object.entries(state.users)
+    .map(([id,u]) => ({id,...u}))
+    .sort((a,b) => Number(b.points || 0) - Number(a.points || 0));
+
+  const myRank = ranked.findIndex(u => u.id === currentUser);
+  const myRankBox = document.getElementById("myRankBox");
+
+  if (currentUser && myRank !== -1) {
+    const me = ranked[myRank];
+    myRankBox.innerHTML = `
+      <div class="hint" style="margin:0 0 4px">내 현재 순위</div>
+      <strong>${myRank + 1}위</strong>
+      <span style="float:right;color:var(--muted);font-size:13px">${Number(me.points || 0).toLocaleString()} P</span>
+    `;
+  } else {
+    myRankBox.innerHTML = `<div class="hint" style="margin:0">로그인하면 내 전체 순위를 확인할 수 있습니다.</div>`;
+  }
+
+  const visible = rankingMode === "top" ? ranked.slice(0,10) : ranked;
+
+  document.getElementById("ranking").innerHTML = visible.length
+    ? visible.map((u,i) => `
+      <div class="rankrow">
+        <div class="rankleft">
+          <span class="ranknum">${i+1}</span>
+          <b>${esc(u.name)}</b>
+          ${u.id === currentUser ? '<span class="pill">나</span>' : ''}
+        </div>
+        <span class="rankpoints">${Number(u.points || 0).toLocaleString()} P</span>
+      </div>
+    `).join("")
+    : `<div class="hint">아직 가입한 회원이 없습니다.</div>`;
+
+  document.getElementById("allRankTab").classList.toggle("active",rankingMode === "all");
+  document.getElementById("topRankTab").classList.toggle("active",rankingMode === "top");
+}
+
 function render() {
   const me = getMe();
 
   const noticeBar = document.getElementById("topNoticeBar");
   const noticeText = document.getElementById("topNoticeText");
+
   if (state.notice && state.notice.trim()) {
     noticeBar.style.display = "flex";
     noticeText.textContent = state.notice;
@@ -240,10 +345,10 @@ function render() {
   if (me) {
     document.getElementById("userLabel").textContent = me.name;
     document.getElementById("profilePoints").style.display = "inline";
-    document.getElementById("profilePoints").textContent = me.points.toLocaleString() + " P";
+    document.getElementById("profilePoints").textContent = Number(me.points || 0).toLocaleString() + " P";
     document.getElementById("authBtn").style.display = "none";
     document.getElementById("logoutBtn").style.display = "inline-block";
-    document.getElementById("myPoints").textContent = me.points.toLocaleString() + " P";
+    document.getElementById("myPoints").textContent = Number(me.points || 0).toLocaleString() + " P";
     document.getElementById("myVote").textContent = state.bets.filter(b => b.userId === currentUser).length + "회";
   } else {
     document.getElementById("userLabel").textContent = "로그인이 필요합니다";
@@ -274,22 +379,49 @@ function render() {
 
   const toggleAttBtn = document.getElementById("toggleAttendanceBtn");
   const attCountLabel = document.getElementById("attendanceCountLabel");
+
   if (toggleAttBtn) {
     toggleAttBtn.textContent = state.attendanceOpen ? "출석체크 마감" : "출석체크 열기 (+1,000 P)";
     toggleAttBtn.className = state.attendanceOpen ? "secondary" : "";
   }
+
   if (attCountLabel) {
     attCountLabel.textContent = `현재 출석 상태: ${state.attendanceOpen ? "열림" : "닫힘"} (${state.attendanceUsers.length}명 출석)`;
   }
 
   const all = state.bets.length;
-  const allPoints = state.bets.reduce((sum, b) => sum + b.amount, 0);
+  const allPoints = state.bets.reduce((sum,b) => sum + Number(b.amount || 0),0);
 
   document.getElementById("teams").innerHTML = state.teams.map(t => {
     const count = totalVotes(t.id);
     const pct = all ? Math.round(count / all * 100) : 0;
     const own = currentUser && state.bets.some(b => b.userId === currentUser && b.team === t.id);
-    return `<article class="team ${own ? 'selected' : ''}"><div class="team-top"><div><h3>${esc(t.name)}</h3><div class="genre">${esc(t.genre || "")}</div></div><span class="pill">${own ? "참여 완료" : state.settled ? (state.winner === t.id ? "베오베" : "종료") : "참여 가능"}</span></div><div class="team-desc">${esc(t.desc || "")}</div><div class="bar"><i style="width:${pct}%"></i></div><div class="percent"><span>${count}표 · ${totalStake(t.id).toLocaleString()} P</span><b>${pct}%</b></div><button class="secondary small" ${own || state.settled ? "disabled" : ""} onclick="selectTeam(${t.id})">${own ? "이미 참여함" : "이 팀 선택"}</button></article>`;
+
+    return `
+      <article class="team ${own ? 'selected' : ''}">
+        <div class="team-top">
+          <div>
+            <h3>${esc(t.name)}</h3>
+            <div class="genre">${esc(t.genre || "")}</div>
+          </div>
+          <span class="pill">${own ? "참여 완료" : state.settled ? (state.winner === t.id ? "베오베" : "종료") : "참여 가능"}</span>
+        </div>
+        <div class="bar"><i style="width:${pct}%"></i></div>
+        <div class="percent">
+          <span>${count}표 · ${totalStake(t.id).toLocaleString()} P</span>
+          <b>${pct}%</b>
+        </div>
+        <button class="secondary small" ${own || state.settled ? "disabled" : ""} onclick="selectTeam(${t.id})">
+          ${own ? "이미 참여함" : "이 팀 선택"}
+        </button>
+        ${adminAuthed ? `
+          <div class="team-actions">
+            <button class="secondary small" onclick="editTeam(${t.id})">팀 수정</button>
+            <button class="danger small" onclick="deleteTeam(${t.id})">팀 삭제</button>
+          </div>
+        ` : ""}
+      </article>
+    `;
   }).join("");
 
   const opts = state.teams.map(t => `<option value="${t.id}">${esc(t.name)}</option>`).join("");
@@ -297,11 +429,13 @@ function render() {
   document.getElementById("winnerSelect").innerHTML = opts;
 
   document.getElementById("resultsSummary").textContent = `총 ${all}표 · ${allPoints.toLocaleString()} P`;
+
   document.getElementById("results").innerHTML = state.teams.map(t => {
     const votes = totalVotes(t.id);
     const stake = totalStake(t.id);
     const votePct = all ? Math.round(votes / all * 100) : 0;
     const pointPct = allPoints ? Math.round(stake / allPoints * 100) : 0;
+
     return `
       <div class="res-item">
         <div class="res-title"><b>${esc(t.name)}</b></div>
@@ -309,28 +443,32 @@ function render() {
         <div class="bar"><i style="width:${votePct}%"></i></div>
         <div class="res-sub"><span>포인트 비율 · ${stake.toLocaleString()} P</span><b style="color:var(--green)">${pointPct}%</b></div>
         <div class="bar pt"><i style="width:${pointPct}%"></i></div>
-      </div>`;
-  }).join("") + (state.settled ? `<p class="hint">최종 베오베: <b>${esc(state.teams.find(t => t.id === state.winner)?.name || "")}</b></p>` : "");
+      </div>
+    `;
+  }).join("") + (state.settled
+    ? `<p class="hint">최종 베오베: <b>${esc(state.teams.find(t => t.id === state.winner)?.name || "")}</b></p>`
+    : "");
 
-  const ranked = Object.values(state.users).sort((a, b) => b.points - a.points);
-  document.getElementById("ranking").innerHTML = ranked.length
-    ? ranked.slice(0, 10).map((u, i) => `<div class="rankrow"><div class="rankleft"><span class="ranknum">${i + 1}</span><b>${esc(u.name)}</b></div><span class="rankpoints">${u.points.toLocaleString()} P</span></div>`).join("")
-    : `<div class="hint">아직 가입한 회원이 없습니다.</div>`;
-
+  renderRanking();
   document.getElementById("betBox").style.opacity = state.settled ? ".55" : "1";
 }
 
-function msg(id, s) {
+function msg(id,s) {
   document.getElementById(id).textContent = s;
 }
 
+window.switchRanking = function(mode) {
+  rankingMode = mode;
+  renderRanking();
+};
+
 window.updateNotice = async function() {
   const text = document.getElementById("adminNoticeInput").value.trim();
-  if (!text) return msg("adminMessage", "공지사항 내용을 입력하세요.");
+  if (!text) return msg("adminMessage","공지사항 내용을 입력하세요.");
   state.notice = text;
   render();
   await saveState();
-  msg("adminMessage", "상단 공지사항을 등록했습니다.");
+  msg("adminMessage","상단 공지사항을 등록했습니다.");
 };
 
 window.clearNotice = async function() {
@@ -338,7 +476,7 @@ window.clearNotice = async function() {
   document.getElementById("adminNoticeInput").value = "";
   render();
   await saveState();
-  msg("adminMessage", "상단 공지사항을 내렸습니다.");
+  msg("adminMessage","상단 공지사항을 내렸습니다.");
 };
 
 window.openAuthModal = function(mode = "login") {
@@ -355,11 +493,14 @@ window.closeAuthModal = function() {
 
 window.switchAuthTab = function(mode) {
   authMode = mode;
-  document.getElementById("tabLogin").classList.toggle("active", mode === "login");
-  document.getElementById("tabSignup").classList.toggle("active", mode === "signup");
+  document.getElementById("tabLogin").classList.toggle("active",mode === "login");
+  document.getElementById("tabSignup").classList.toggle("active",mode === "signup");
   document.getElementById("authSubmitBtn").textContent = mode === "login" ? "로그인" : "회원가입";
   document.getElementById("authNotice").style.display = mode === "signup" ? "block" : "none";
   document.getElementById("authName").placeholder = mode === "signup" ? "본인 이름 (아이디로 사용됩니다)" : "본인 이름 (아이디)";
+  document.getElementById("authPass").placeholder = mode === "signup" ? "숫자 4자리 비밀번호 설정" : "숫자 4자리 비밀번호";
+  document.getElementById("authPass").setAttribute("maxlength","4");
+  document.getElementById("authPass").setAttribute("inputmode","numeric");
   document.getElementById("authError").textContent = "";
 };
 
@@ -373,29 +514,38 @@ window.submitAuth = async function() {
     return;
   }
 
+  if (!/^\d{4}$/.test(pass)) {
+    errEl.textContent = "비밀번호는 숫자 4자리로 입력해야 합니다.";
+    return;
+  }
+
   if (authMode === "signup") {
     if (state.users[name]) {
       errEl.textContent = "이미 등록된 이름입니다. 동명이인일 경우 이름 뒤에 학번/숫자를 붙여주세요.";
       return;
     }
-    state.users[name] = { name, password: pass, points: 1000 };
+
+    state.users[name] = {name,password:pass,points:1000};
     currentUser = name;
-    localStorage.setItem(SESSION_KEY, currentUser);
+    localStorage.setItem(SESSION_KEY,currentUser);
     closeAuthModal();
     render();
     await saveState();
   } else {
     const user = state.users[name];
+
     if (!user) {
       errEl.textContent = "존재하지 않는 이름입니다. 회원가입을 먼저 진행하세요.";
       return;
     }
+
     if (user.password !== pass) {
       errEl.textContent = "비밀번호가 일치하지 않습니다.";
       return;
     }
+
     currentUser = name;
-    localStorage.setItem(SESSION_KEY, currentUser);
+    localStorage.setItem(SESSION_KEY,currentUser);
     closeAuthModal();
     render();
   }
@@ -411,15 +561,19 @@ window.toggleAttendance = async function() {
   state.attendanceOpen = !state.attendanceOpen;
   render();
   await saveState();
-  msg("adminMessage", state.attendanceOpen ? "출석체크를 열었습니다. 학생들이 1회씩 1,000 P를 받을 수 있습니다." : "출석체크를 마감했습니다.");
+  msg("adminMessage",state.attendanceOpen
+    ? "출석체크를 열었습니다. 학생들이 1회씩 1,000 P를 받을 수 있습니다."
+    : "출석체크를 마감했습니다.");
 };
 
 window.claimAttendance = async function() {
   const me = getMe();
+
   if (!me) {
     openAuthModal("login");
     return;
   }
+
   if (!state.attendanceOpen) return alert("현재 출석체크가 열려 있지 않습니다.");
   if (state.attendanceUsers.includes(currentUser)) return alert("이미 이번 출석체크에 참여했습니다.");
 
@@ -435,72 +589,143 @@ window.selectTeam = function(id) {
     openAuthModal("login");
     return;
   }
+
   document.getElementById("teamSelect").value = id;
   document.getElementById("stake").focus();
 };
 
 window.placeBet = async function() {
   const me = getMe();
+
   if (!me) {
     openAuthModal("login");
     return;
   }
-  if (state.settled) return msg("betMessage", "이미 결과가 발표됐습니다.");
+
+  if (state.settled) return msg("betMessage","이미 결과가 발표됐습니다.");
+
   const id = Number(document.getElementById("teamSelect").value);
   const amount = Math.floor(Number(document.getElementById("stake").value));
-  if (state.bets.some(b => b.userId === currentUser && b.team === id)) return msg("betMessage", "이 팀에는 이미 참여했습니다.");
-  if (!Number.isFinite(amount) || amount < 1) return msg("betMessage", "1P 이상 입력하세요.");
-  if (amount > me.points) return msg("betMessage", "보유 포인트보다 많이 걸 수 없습니다.");
+
+  if (!state.teams.some(t => t.id === id)) return msg("betMessage","팀을 선택하세요.");
+  if (state.bets.some(b => b.userId === currentUser && b.team === id)) return msg("betMessage","이 팀에는 이미 참여했습니다.");
+  if (!Number.isFinite(amount) || amount < 1) return msg("betMessage","1P 이상 입력하세요.");
+  if (amount > me.points) return msg("betMessage","보유 포인트보다 많이 걸 수 없습니다.");
 
   me.points -= amount;
-  state.bets.push({ userId: currentUser, userName: me.name, team: id, amount });
+  state.bets.push({userId:currentUser,userName:me.name,team:id,amount});
   render();
   await saveState();
-  msg("betMessage", "참여가 완료됐고 실시간으로 반영됐습니다.");
+  msg("betMessage","참여가 완료됐고 실시간으로 반영됐습니다.");
 };
 
 window.toggleAdmin = function() {
   const panel = document.getElementById("admin");
+
   if (panel.classList.contains("open")) {
     panel.classList.remove("open");
+    adminAuthed = false;
+    render();
     return;
   }
+
   if (!adminAuthed) {
     const pw = prompt("운영자 비밀번호를 입력하세요.");
     if (pw === null) return;
+
     if (pw !== ADMIN_PASS) {
       alert("비밀번호가 올바르지 않습니다.");
       return;
     }
+
     adminAuthed = true;
   }
+
   document.getElementById("adminNoticeInput").value = state.notice || "";
   panel.classList.add("open");
+  render();
 };
 
 window.addTeam = async function() {
   const n = document.getElementById("adminTeamName").value.trim();
-  if (!n) return msg("adminMessage", "팀 이름을 입력하세요.");
+  const genre = document.getElementById("adminGenre").value.trim();
+
+  if (!n) return msg("adminMessage","팀 이름을 입력하세요.");
+
   state.teams.push({
-    id: Date.now(),
-    name: n,
-    genre: document.getElementById("adminGenre").value.trim(),
-    desc: "새로 추가된 참가 무대"
+    id:Date.now(),
+    name:n,
+    genre
   });
+
   document.getElementById("adminTeamName").value = "";
+  document.getElementById("adminGenre").value = "";
   render();
   await saveState();
-  msg("adminMessage", "팀을 추가했습니다.");
+  msg("adminMessage","팀을 추가했습니다.");
+};
+
+window.editTeam = async function(id) {
+  if (!adminAuthed) return alert("운영자 인증이 필요합니다.");
+
+  const team = state.teams.find(t => t.id === id);
+  if (!team) return;
+
+  const newName = prompt("변경할 팀 이름을 입력하세요.",team.name);
+  if (newName === null) return;
+
+  if (!newName.trim()) return alert("팀 이름을 입력해야 합니다.");
+
+  const newGenre = prompt("변경할 장르를 입력하세요.",team.genre || "");
+  if (newGenre === null) return;
+
+  team.name = newName.trim();
+  team.genre = newGenre.trim();
+
+  render();
+  await saveState();
+  msg("adminMessage","팀 정보를 수정했습니다.");
+};
+
+window.deleteTeam = async function(id) {
+  if (!adminAuthed) return alert("운영자 인증이 필요합니다.");
+
+  const team = state.teams.find(t => t.id === id);
+  if (!team) return;
+
+  if (!confirm(`'${team.name}' 팀을 삭제할까요?\n해당 팀에 걸린 포인트는 참여자에게 반환됩니다.`)) return;
+
+  const deletedBets = state.bets.filter(b => b.team === id);
+
+  deletedBets.forEach(b => {
+    if (state.users[b.userId]) {
+      state.users[b.userId].points += Number(b.amount || 0);
+    }
+  });
+
+  state.bets = state.bets.filter(b => b.team !== id);
+  state.teams = state.teams.filter(t => t.id !== id);
+
+  if (state.winner === id) {
+    state.winner = null;
+    state.settled = false;
+  }
+
+  render();
+  await saveState();
+  msg("adminMessage",`'${team.name}' 팀을 삭제했습니다. 삭제된 팀의 배팅 포인트는 반환했습니다.`);
 };
 
 window.settle = async function() {
-  if (state.settled) return msg("adminMessage", "이미 정산이 끝났습니다.");
-  if (!state.bets.length) return msg("adminMessage", "참여 기록이 없습니다.");
+  if (state.settled) return msg("adminMessage","이미 정산이 끝났습니다.");
+  if (!state.bets.length) return msg("adminMessage","참여 기록이 없습니다.");
+
   const winner = Number(document.getElementById("winnerSelect").value);
   const winningBets = state.bets.filter(b => b.team === winner);
-  if (!winningBets.length) return msg("adminMessage", "해당 팀에 투표한 사람이 없어 정산할 수 없습니다.");
 
-  const totalPool = state.bets.reduce((s, b) => s + b.amount, 0);
+  if (!winningBets.length) return msg("adminMessage","해당 팀에 투표한 사람이 없어 정산할 수 없습니다.");
+
+  const totalPool = state.bets.reduce((s,b) => s + Number(b.amount || 0),0);
   const share = Math.floor(totalPool / winningBets.length);
 
   winningBets.forEach(b => {
@@ -513,51 +738,64 @@ window.settle = async function() {
   state.winner = winner;
   render();
   await saveState();
-  msg("adminMessage", `베오베 발표 완료! 총 ${totalPool.toLocaleString()} P를 정답자 ${winningBets.length}명에게 1인당 ${share.toLocaleString()} P씩 균등 분배했습니다.`);
+
+  msg("adminMessage",`베오베 발표 완료! 총 ${totalPool.toLocaleString()} P를 정답자 ${winningBets.length}명에게 1인당 ${share.toLocaleString()} P씩 균등 분배했습니다.`);
 };
 
 window.resetRound = async function() {
   if (!confirm("현재 누적 포인트는 유지하고, 이번 라운드 투표 및 출석 기록만 초기화할까요?")) return;
+
   state.bets = [];
   state.settled = false;
   state.winner = null;
   state.attendanceOpen = false;
   state.attendanceUsers = [];
+
   render();
   await saveState();
-  msg("adminMessage", "투표 및 출석 기록을 초기화했습니다. (누적 포인트는 유지됩니다)");
+  msg("adminMessage","투표 및 출석 기록을 초기화했습니다. (누적 포인트는 유지됩니다)");
 };
 
 window.resetAll = async function() {
   if (!confirm("주의: 모든 사용자의 누적 포인트까지 1,000 P로 초기화할까요?")) return;
+
   const resetUsers = {};
+
   Object.keys(state.users).forEach(uid => {
-    resetUsers[uid] = { ...state.users[uid], points: 1000 };
+    resetUsers[uid] = {...state.users[uid],points:1000};
   });
+
   state = {
-    teams: initialTeams,
-    bets: [],
-    settled: false,
-    winner: null,
-    users: resetUsers,
-    attendanceOpen: false,
-    attendanceUsers: [],
-    notice: ""
+    teams:initialTeams,
+    bets:[],
+    settled:false,
+    winner:null,
+    users:resetUsers,
+    attendanceOpen:false,
+    attendanceUsers:[],
+    notice:""
   };
+
   render();
   await saveState();
-  msg("adminMessage", "모든 데이터와 포인트를 초기 상태로 리셋했습니다.");
+  msg("adminMessage","모든 데이터와 포인트를 초기 상태로 리셋했습니다.");
 };
 
 async function init() {
   const snap = await getDoc(roomRef);
+
   if (!snap.exists()) {
     await saveState();
   }
-  onSnapshot(roomRef, (docSnap) => {
+
+  onSnapshot(roomRef,(docSnap) => {
     if (docSnap.exists()) {
       const d = docSnap.data();
-      state.teams = d.teams || initialTeams;
+
+      state.teams = Array.isArray(d.teams)
+        ? d.teams.map(t => ({id:t.id,name:t.name,genre:t.genre || ""}))
+        : initialTeams;
+
       state.bets = d.bets || [];
       state.settled = Boolean(d.settled);
       state.winner = d.winner ?? null;
@@ -566,10 +804,12 @@ async function init() {
       state.attendanceUsers = Array.isArray(d.attendanceUsers) ? d.attendanceUsers : [];
       state.notice = d.notice || "";
     }
+
     if (currentUser && !state.users[currentUser]) {
       currentUser = null;
       localStorage.removeItem(SESSION_KEY);
     }
+
     render();
   });
 }
